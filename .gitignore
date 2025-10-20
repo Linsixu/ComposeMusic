@@ -1,0 +1,8 @@
+/build
+/composeApp/build
+bin/
+.gradle/
+*.iml
+.idea
+.DS_Store
+iosApp/.DS_Store
