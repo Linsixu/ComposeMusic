@@ -1,29 +1,94 @@
 package com.music.classroom.page
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+
+//import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.music.classroom.color.primaryColor
+import com.music.classroom.navi.NavRoutes
+import musicclassroom.composeapp.generated.resources.Res
+import musicclassroom.composeapp.generated.resources.add_test
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * @author: linsixu@ruqimobility.com
  * @date:2025/10/17
  * 用途：
  */
+data class InfoItem(val id: Int, val title: String, val content: String)
+
+
 @Composable
-fun HomeScreen() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "首页",
-            textAlign = TextAlign.Center
+fun HomeScreen(navController: NavController) {
+    // 模拟列表数据（实际项目可从ViewModel获取）
+    val (infoList, setInfoList) = remember {
+        mutableStateOf(
+            listOf(
+                InfoItem(1, "示例1", "这是第一条信息"),
+                InfoItem(2, "示例2", "这是第二条信息"),
+                InfoItem(3, "示例3", "这是第三条信息")
+            )
         )
+    }
+
+    // 悬浮按钮点击事件：导航到信息填写页，并接收返回结果
+//    val context = LocalContext.current
+    fun navigateToInfoInput() {
+        navController.navigate(NavRoutes.InfoInput.route) {
+            // 配置返回回调，接收填写的信息
+            launchSingleTop = true
+            // 当从InfoInput返回时，通过savedStateHandle传递数据
+            popUpTo(NavRoutes.Home.route) {
+                inclusive = false
+            }
+        }
+    }
+
+    // 关键：用 Box 容器包裹列表和悬浮按钮
+    // Box 会让子元素堆叠显示，便于悬浮按钮覆盖在列表上方
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 列表（占满屏幕）
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(infoList) { item ->
+                ListItem(
+                    headlineContent = { Text(text = item.title) },
+                    supportingContent = { Text(text = item.content) }
+                )
+            }
+        }
+
+        // 悬浮按钮（固定在右下角，设置合适大小和边距）
+        FloatingActionButton(
+            onClick = ::navigateToInfoInput,
+            containerColor = primaryColor,
+            contentColor = Color.White,
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // 固定在右下角
+                .padding(24.dp) // 与屏幕边缘保持距离
+                .size(56.dp) // 显式设置大小（默认也是56dp，可按需调整）
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.add_test),
+                contentDescription = "添加信息",
+                tint = Color.White,
+                modifier = Modifier.size(18.dp) // 图标大小（建议24dp）
+            )
+        }
     }
 }

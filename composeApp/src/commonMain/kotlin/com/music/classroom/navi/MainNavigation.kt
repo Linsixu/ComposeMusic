@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.music.classroom.color.primaryColor
+import com.music.classroom.home.InfoInputScreen
 import com.music.classroom.page.HomeScreen
 import com.music.classroom.page.ProfileScreen
 import com.music.classroom.page.OldCourse
@@ -58,9 +59,13 @@ fun MainNavigation() {
                 navController = navController,
                 startDestination = NavRoutes.Home.route
             ) {
-                composable(NavRoutes.Home.route) { HomeScreen() }
+                composable(NavRoutes.Home.route) { HomeScreen(navController) }
                 composable(NavRoutes.Course.route) { OldCourse() }
                 composable(NavRoutes.Profile.route) { ProfileScreen() }
+                // 新增信息填写页路由
+                composable(NavRoutes.InfoInput.route) {
+                    InfoInputScreen(navController = navController)
+                }
             }
         }
     }

@@ -40,6 +40,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.navigation.navigationCompose)
+
+            //跨平台日历选择器
+//            implementation("io.github.alexzhirkevich:datetime-compose-multiplatform:1.4.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
