@@ -62,10 +62,6 @@ fun MainNavigation() {
                 composable(NavRoutes.Home.route) { HomeScreen(navController) }
                 composable(NavRoutes.Course.route) { OldCourse() }
                 composable(NavRoutes.Profile.route) { ProfileScreen() }
-                // 新增信息填写页路由
-                composable(NavRoutes.InfoInput.route) {
-                    InfoInputScreen(navController = navController)
-                }
             }
         }
     }

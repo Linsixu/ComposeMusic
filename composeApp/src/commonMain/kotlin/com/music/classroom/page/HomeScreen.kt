@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.music.classroom.color.primaryColor
+import com.music.classroom.home.InfoInputBottomSheet
 import com.music.classroom.navi.NavRoutes
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.add_test
@@ -46,6 +47,9 @@ fun HomeScreen(navController: NavController) {
             )
         )
     }
+
+    // 新增：控制底部弹窗显示/隐藏的状态
+    val (showSheet, setShowSheet) = remember { mutableStateOf(false) }
 
     // 悬浮按钮点击事件：导航到信息填写页，并接收返回结果
 //    val context = LocalContext.current
@@ -75,7 +79,7 @@ fun HomeScreen(navController: NavController) {
 
         // 悬浮按钮（固定在右下角，设置合适大小和边距）
         FloatingActionButton(
-            onClick = ::navigateToInfoInput,
+            onClick = { setShowSheet(true) }, // 改为显示弹窗
             containerColor = primaryColor,
             contentColor = Color.White,
             modifier = Modifier
@@ -88,6 +92,20 @@ fun HomeScreen(navController: NavController) {
                 contentDescription = "添加信息",
                 tint = Color.White,
                 modifier = Modifier.size(18.dp) // 图标大小（建议24dp）
+            )
+        }
+
+        // 条件显示底部弹窗（核心修改）
+        if (showSheet) {
+            InfoInputBottomSheet(
+                navController = navController,
+                onDismiss = { setShowSheet(false) }, // 关闭弹窗
+                // 新增：接收表单提交的数据（替代原来的 savedStateHandle 传递）
+                onSubmit = { title, content, dateTime ->
+                    // 处理提交的数据（如更新列表、保存到数据库）
+                    // ...
+                    setShowSheet(false) // 提交后关闭弹窗
+                }
             )
         }
     }
