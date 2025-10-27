@@ -2,7 +2,10 @@ package com.music.classroom.page
 
 
 //import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,11 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
 import com.music.classroom.home.InfoInputBottomSheet
-import com.music.classroom.navi.NavRoutes
+import com.music.classroom.home.adapter.CustomListItem
+import com.music.classroom.home.adapter.SwipeToDeleteItem
 import musicclassroom.composeapp.generated.resources.Res
-import musicclassroom.composeapp.generated.resources.add_test
+import musicclassroom.composeapp.generated.resources.add_message_icon
 import org.jetbrains.compose.resources.painterResource
 
 /**
@@ -51,29 +54,26 @@ fun HomeScreen(navController: NavController) {
     // 新增：控制底部弹窗显示/隐藏的状态
     val (showSheet, setShowSheet) = remember { mutableStateOf(false) }
 
-    // 悬浮按钮点击事件：导航到信息填写页，并接收返回结果
-//    val context = LocalContext.current
-    fun navigateToInfoInput() {
-        navController.navigate(NavRoutes.InfoInput.route) {
-            // 配置返回回调，接收填写的信息
-            launchSingleTop = true
-            // 当从InfoInput返回时，通过savedStateHandle传递数据
-            popUpTo(NavRoutes.Home.route) {
-                inclusive = false
-            }
-        }
-    }
-
     // 关键：用 Box 容器包裹列表和悬浮按钮
     // Box 会让子元素堆叠显示，便于悬浮按钮覆盖在列表上方
     Box(modifier = Modifier.fillMaxSize()) {
         // 列表（占满屏幕）
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(infoList) { item ->
-                ListItem(
-                    headlineContent = { Text(text = item.title) },
-                    supportingContent = { Text(text = item.content) }
-                )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().background(bgPrimaryColor),
+            verticalArrangement = Arrangement.spacedBy(8.dp), // Item 上下间距8dp
+            contentPadding = PaddingValues(16.dp) // 列表左右内边距
+        ) {
+            items(infoList, key = { it.id }) { item ->
+                SwipeToDeleteItem(
+                    onDelete = { /* 执行删除逻辑，如从列表中移除 item */ }
+                ) {
+                    CustomListItem(
+                        title = item.title,
+                        time = item.content,
+                        onButton1Click = { /* 编辑逻辑 */ },
+                        onButton2Click = { /* 详情逻辑 */ }
+                    )
+                }
             }
         }
 
@@ -88,7 +88,7 @@ fun HomeScreen(navController: NavController) {
                 .size(56.dp) // 显式设置大小（默认也是56dp，可按需调整）
         ) {
             Icon(
-                painter = painterResource(Res.drawable.add_test),
+                painter = painterResource(Res.drawable.add_message_icon),
                 contentDescription = "添加信息",
                 tint = Color.White,
                 modifier = Modifier.size(18.dp) // 图标大小（建议24dp）

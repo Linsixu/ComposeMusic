@@ -6,6 +6,7 @@ package com.music.classroom.navi
  * 用途：
  */
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,11 +26,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
-import com.music.classroom.home.InfoInputScreen
 import com.music.classroom.page.HomeScreen
-import com.music.classroom.page.ProfileScreen
 import com.music.classroom.page.OldCourse
+import com.music.classroom.page.ProfileScreen
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.compose_course_icon
 import musicclassroom.composeapp.generated.resources.compose_home_icon
@@ -45,9 +46,9 @@ fun MainNavigation() {
     val navController = rememberNavController()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(bgPrimaryColor),
         bottomBar = { BottomNavigationBar(navController = navController) } // 底部导航栏
-    ) {innerPadding ->
+    ) { innerPadding ->
         // 内容区域（通过innerPadding避免被底部导航栏遮挡）
         Surface(
             modifier = Modifier
@@ -106,7 +107,11 @@ private fun BottomNavigationBar(navController: NavController) {
         )
     )
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = bgPrimaryColor, // 直接设置导航栏背景色（示例：白色，可替换为自定义色）
+        // 可选：添加导航栏内边距（避免图标文字紧贴边缘）
+        modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
+    ){
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 

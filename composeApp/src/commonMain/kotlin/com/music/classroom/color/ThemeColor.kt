@@ -12,3 +12,7 @@ val primaryColor: Color = Color(0xFF13227a)
 
 
 val unselectPrimaryColor = Color(0xFF8a8a8a)
+
+
+//背景主题色
+val bgPrimaryColor: Color = Color(0xFFF7F8FA)

@@ -44,6 +44,8 @@ kotlin {
             //跨平台日历选择器
 //            implementation("io.github.alexzhirkevich:datetime-compose-multiplatform:1.4.0")
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+            //ios 下面没有
+//            implementation("androidx.compose.foundation:foundation:1.9.2")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
