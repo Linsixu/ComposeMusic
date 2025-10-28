@@ -1,10 +1,5 @@
 package com.music.classroom.navi
 
-/**
- * @author: linsixu@ruqimobility.com
- * @date:2025/10/17
- * 用途：
- */
 import ProfileScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -45,19 +40,28 @@ import musicclassroom.composeapp.generated.resources.unselect_compose_my_self_ic
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
+
 @Composable
 fun MainNavigation() {
     val navController = rememberNavController()
+    // 1. 获取当前路由（监听导航栈顶部页面）
+    val currentBackStack by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStack?.destination?.route
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(bgPrimaryColor),
-        bottomBar = { BottomNavigationBar(navController = navController) } // 底部导航栏
+        // 2. 传递当前路由给 BottomNavigationBar，控制 Tab 显示/隐藏
+        bottomBar = {
+            BottomNavigationBar(
+                navController = navController,
+                currentRoute = currentRoute
+            )
+        }
     ) { innerPadding ->
-        // 内容区域（通过innerPadding避免被底部导航栏遮挡）
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding), // 应用内边距，防止内容被底部栏遮挡
+                .padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
             androidx.navigation.compose.NavHost(
@@ -67,7 +71,7 @@ fun MainNavigation() {
                 composable(NavRoutes.Home.route) { HomeScreen(navController) }
                 composable(NavRoutes.Course.route) { OldCourse() }
                 composable(NavRoutes.Profile.route) { ProfileScreen(navController) }
-                //下面是设置页面
+                // 设置页面路由（确保与 NavRoutes 一致）
                 composable(NavRoutes.ProfileDefault.route) { LessonDefaultScreen(navController) }
                 composable(NavRoutes.ProfileNotification.route) { NotificationScreen() }
                 composable(NavRoutes.ProfileDataTransfer.route) { DataTransferScreen() }
@@ -75,30 +79,32 @@ fun MainNavigation() {
             }
         }
     }
-//    Surface(
-//        modifier = Modifier.fillMaxSize(),
-//        color = MaterialTheme.colorScheme.background
-//    ) {
-//        androidx.navigation.compose.NavHost(
-//            navController = navController,
-//            startDestination = NavRoutes.Home.route
-//        ) {
-//            composable(NavRoutes.Home.route) { HomeScreen() }
-//            composable(NavRoutes.Search.route) { SearchScreen() }
-//            composable(NavRoutes.Profile.route) { ProfileScreen() }
-//        }
-//
-//        BottomNavigationBar(navController = navController)
-//    }
 }
 
 @Composable
-private fun BottomNavigationBar(navController: NavController) {
-    // 定义底部导航项（使用本地图片资源）
+private fun BottomNavigationBar(
+    navController: NavController,
+    currentRoute: String? // 3. 接收当前路由，用于判断是否隐藏 Tab
+) {
+    // 4. 定义需要隐藏 Tab 的路由列表（添加 LessonDefaultScreen 的路由）
+    val hideTabRoutes = listOf(
+        NavRoutes.ProfileDefault.route, // 核心：LessonDefaultScreen 对应的路由
+        // 后续其他需要隐藏 Tab 的页面，直接添加路由即可（如通知、数据传输）
+        NavRoutes.ProfileNotification.route,
+        NavRoutes.ProfileDataTransfer.route,
+        NavRoutes.ProfileExcelGenerate.route
+    )
+
+    // 5. 条件渲染：若当前路由在隐藏列表中，不显示 Tab 栏
+    if (currentRoute in hideTabRoutes) {
+        return // 直接返回，不渲染 Tab 栏
+    }
+
+    // 以下是原有的 Tab 栏逻辑（仅当不需要隐藏时才执行）
     val items = listOf(
         NavigationItem(
             route = NavRoutes.Home.route,
-            selectIconRes = Res.drawable.compose_home_icon, // 本地图片资源
+            selectIconRes = Res.drawable.compose_home_icon,
             unSelectIconRes = Res.drawable.unselect_compose_home_icon,
             label = "今日课程"
         ),
@@ -117,46 +123,37 @@ private fun BottomNavigationBar(navController: NavController) {
     )
 
     NavigationBar(
-        containerColor = bgPrimaryColor, // 直接设置导航栏背景色（示例：白色，可替换为自定义色）
-        // 可选：添加导航栏内边距（避免图标文字紧贴边缘）
+        containerColor = bgPrimaryColor,
         modifier = Modifier.padding(horizontal = 0.dp, vertical = 0.dp)
-    ){
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+        val currentRouteInner = navBackStackEntry?.destination?.route
 
         items.forEach { item ->
-            val isSelected = currentRoute == item.route
+            val isSelected = currentRouteInner == item.route
             NavigationBarItem(
                 icon = {
-                    if (isSelected) {
-                        Image(
-                            painter = painterResource(item.selectIconRes), // 加载本地图片
-                            contentDescription = item.label,
-                            modifier = Modifier.size(24.dp) // 图标大小
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(item.unSelectIconRes), // 加载本地图片
-                            contentDescription = item.label,
-                            modifier = Modifier.size(24.dp) // 图标大小
-                        )
-                    }
+                    Image(
+                        painter = if (isSelected) painterResource(item.selectIconRes)
+                        else painterResource(item.unSelectIconRes),
+                        contentDescription = item.label,
+                        modifier = Modifier.size(24.dp)
+                    )
                 },
                 label = { Text(text = item.label) },
                 selected = isSelected,
-                // 选中/未选中状态的颜色区分
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = primaryColor, // 选中时图标颜色
-                    selectedTextColor = primaryColor, // 选中时文字颜色
-                    unselectedIconColor = Color.Gray, // 未选中时图标颜色
-                    unselectedTextColor = Color.Gray, // 未选中时文字颜色
-                    indicatorColor = Color.Transparent // 选中时背景指示器颜色（可选）
+                    selectedIconColor = primaryColor,
+                    selectedTextColor = primaryColor,
+                    unselectedIconColor = Color.Gray,
+                    unselectedTextColor = Color.Gray,
+                    indicatorColor = Color.Transparent
                 ),
                 onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true // 避免重复创建页面
-                        restoreState = true // 恢复状态
+                        launchSingleTop = true
+                        restoreState = true
                     }
                 }
             )
@@ -164,10 +161,9 @@ private fun BottomNavigationBar(navController: NavController) {
     }
 }
 
-// 导航项数据类（存储资源ID）
 data class NavigationItem(
     val route: String,
-    val selectIconRes: DrawableResource, // 资源ID（对应MR.drawable中的定义）
-    val unSelectIconRes: DrawableResource, // 资源ID（对应MR.drawable中的定义）
+    val selectIconRes: DrawableResource,
+    val unSelectIconRes: DrawableResource,
     val label: String
 )
