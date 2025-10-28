@@ -3,7 +3,9 @@ package com.music.classroom.util
 
 import androidx.compose.ui.graphics.Color
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.UnsafeNumber
 import platform.Foundation.NSSelectorFromString
+import platform.Foundation.setValue
 import platform.UIKit.UIColor
 import platform.UIKit.UIStatusBarStyle
 import platform.UIKit.UIStatusBarStyleDarkContent
@@ -69,28 +71,26 @@ actual class StatusBarController actual constructor() {
     @OptIn(ExperimentalForeignApi::class)
     actual fun setStatusBarTextDark(isDark: Boolean) {
         val targetStyle = if (isDark) {
-            UIStatusBarStyleDarkContent // 深色文字（iOS 13+）
+            UIStatusBarStyleDarkContent // 深色文字
         } else {
-            UIStatusBarStyleLightContent // 白色文字（全版本）
+            UIStatusBarStyleLightContent // 白色文字
         }
 
-        // 方式1：通过顶层 VC 控制（优先，支持动态切换）
+        // 方式1：通过顶层 VC 控制状态栏样式
         topViewController?.let { vc ->
-            // 反射设置 statusBarStyle（Kotlin 不支持直接赋值）
-            val setStyleSelector = NSSelectorFromString("setStatusBarStyle:")
-            if (vc.respondsToSelector(setStyleSelector)) {
-                vc.performSelector(setStyleSelector, targetStyle)
-            }
-            // 刷新状态栏
+            // 1. 设置 statusBarStyle 属性（用 setValue 传递参数）
+            vc.setValue(targetStyle, forKey = "statusBarStyle")
+            // 2. 刷新状态栏
             vc.performSelector(NSSelectorFromString("setNeedsStatusBarAppearanceUpdate"))
         }
 
-        // 方式2：全局设置（兼容 iOS 13 以下版本）
+        // 方式2：全局设置（兼容旧版本）
         val app = UIApplication.sharedApplication
-        val globalSetStyleSelector = NSSelectorFromString("setStatusBarStyle:animated:")
-        if (app.respondsToSelector(globalSetStyleSelector)) {
-            app.performSelector(globalSetStyleSelector, targetStyle, true)
-        }
+        // 1. 设置全局状态栏样式（用 setValue 传递参数）
+        app.setValue(targetStyle, forKey = "statusBarStyle")
+        // 2. 刷新状态栏（带动画）
+        app.setValue(true, forKey = "statusBarHidden") // 触发刷新
+        app.setValue(false, forKey = "statusBarHidden")
     }
 
     // ------------------------------ 私有辅助方法 ------------------------------
