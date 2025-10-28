@@ -73,9 +73,9 @@ fun MainNavigation() {
                 composable(NavRoutes.Profile.route) { ProfileScreen(navController) }
                 // 设置页面路由（确保与 NavRoutes 一致）
                 composable(NavRoutes.ProfileDefault.route) { LessonDefaultScreen(navController) }
-                composable(NavRoutes.ProfileNotification.route) { NotificationScreen() }
-                composable(NavRoutes.ProfileDataTransfer.route) { DataTransferScreen() }
-                composable(NavRoutes.ProfileExcelGenerate.route) { ExcelGenerateScreen() }
+                composable(NavRoutes.ProfileNotification.route) { NotificationScreen(navController) }
+                composable(NavRoutes.ProfileDataTransfer.route) { DataTransferScreen(navController) }
+                composable(NavRoutes.ProfileExcelGenerate.route) { ExcelGenerateScreen(navController) }
             }
         }
     }
