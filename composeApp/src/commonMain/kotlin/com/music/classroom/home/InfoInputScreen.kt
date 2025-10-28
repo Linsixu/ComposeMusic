@@ -61,6 +61,7 @@ import musicclassroom.composeapp.generated.resources.compose_dialog_close_icon
 import org.jetbrains.compose.resources.painterResource
 
 const val DEFAULT_CLASS_MILLI_TIME = 45 * 60 * 1000L//毫秒
+const val DEFAULT_CLASS_MINUTE_TIME = 45L //分钟
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,7 +88,7 @@ fun InfoInputBottomSheet(
 
     var mSelectedGrade by remember { mutableStateOf<String>("1级") }
     //一节课时间（默认45分钟）
-    var mClassTime by remember { mutableStateOf(DEFAULT_CLASS_MILLI_TIME) }
+    var mClassTime by remember { mutableStateOf(DEFAULT_CLASS_MINUTE_TIME) }
 
     // 日期/时间选择器状态
     val datePickerState = rememberDatePickerState(
@@ -183,6 +184,14 @@ fun InfoInputBottomSheet(
                     value = mStudentName,
                     onValueChange = { mStudentName = it },
                     label = { Text("学生姓名") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+
+                OutlinedTextField(
+                    value = mClassTime.toString() + "分钟",
+                    onValueChange = { mClassTime = it.toLong() },
+                    label = { Text("课时") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
