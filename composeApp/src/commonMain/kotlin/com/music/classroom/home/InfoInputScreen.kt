@@ -1,7 +1,6 @@
 package com.music.classroom.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,12 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +27,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,10 +43,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
 import com.music.classroom.color.primaryB3Color
 import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
 import com.music.classroom.home.menu.MenuSelectionBox
+import com.music.classroom.storage.spStorage
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -70,6 +70,7 @@ fun InfoInputBottomSheet(
     onDismiss: () -> Unit, // 关闭弹窗的回调
     onSubmit: (title: String, content: String, dateTime: String) -> Unit
 ) {
+
     // 底部弹窗状态（可滑动关闭、设置最大高度）
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true, // 跳过半展开状态
@@ -99,6 +100,13 @@ fun InfoInputBottomSheet(
         initialMinute = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).minute,
         is24Hour = true
     )
+
+    LaunchedEffect(Unit) {
+        val savedValue = spStorage.getString(DEFAULT_LESSON_DEFAULT_TIME)
+        if (savedValue.isNotBlank()) {
+            mClassTime = savedValue.toLong()
+        }
+    }
 
     // 日期转换与合并逻辑（复用之前的实现）
     fun convertMillisToLocalDate(millis: Long): LocalDate {

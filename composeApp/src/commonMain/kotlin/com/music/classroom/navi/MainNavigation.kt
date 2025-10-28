@@ -5,6 +5,7 @@ package com.music.classroom.navi
  * @date:2025/10/17
  * 用途：
  */
+import ProfileScreen
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +31,10 @@ import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
 import com.music.classroom.page.HomeScreen
 import com.music.classroom.page.OldCourse
-import com.music.classroom.page.ProfileScreen
+import com.music.classroom.setting.DataTransferScreen
+import com.music.classroom.setting.ExcelGenerateScreen
+import com.music.classroom.setting.LessonDefaultScreen
+import com.music.classroom.setting.NotificationScreen
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.compose_course_icon
 import musicclassroom.composeapp.generated.resources.compose_home_icon
@@ -62,7 +66,12 @@ fun MainNavigation() {
             ) {
                 composable(NavRoutes.Home.route) { HomeScreen(navController) }
                 composable(NavRoutes.Course.route) { OldCourse() }
-                composable(NavRoutes.Profile.route) { ProfileScreen() }
+                composable(NavRoutes.Profile.route) { ProfileScreen(navController) }
+                //下面是设置页面
+                composable(NavRoutes.ProfileDefault.route) { LessonDefaultScreen(navController) }
+                composable(NavRoutes.ProfileNotification.route) { NotificationScreen() }
+                composable(NavRoutes.ProfileDataTransfer.route) { DataTransferScreen() }
+                composable(NavRoutes.ProfileExcelGenerate.route) { ExcelGenerateScreen() }
             }
         }
     }
