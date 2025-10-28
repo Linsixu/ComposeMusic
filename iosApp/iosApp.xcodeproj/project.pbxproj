@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		5C11CAC28FA6796EB27E7093 /* MusicClassRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicClassRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5C11CAC28FA6796EB27E7093 /* 睿音艺术中心.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "睿音艺术中心.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		8BE92AED5DF5468D7D91203A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				5C11CAC28FA6796EB27E7093 /* MusicClassRoom.app */,
+				5C11CAC28FA6796EB27E7093 /* 睿音艺术中心.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 5C11CAC28FA6796EB27E7093 /* MusicClassRoom.app */;
+			productReference = 5C11CAC28FA6796EB27E7093 /* 睿音艺术中心.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

@@ -20,6 +20,7 @@ import platform.objc.objc_getClass
 import platform.objc.objc_msgSend
 
 // iOS 状态栏控制器实现（Kotlin 反射适配）
+@Deprecated("废弃了，只有Android用上")
 actual class StatusBarController actual constructor() {
     // 缓存 iOS 关键对象：顶层VC（控制文字）、窗口（控制背景）
     private var topViewController: UIViewController? = null

@@ -1,6 +1,6 @@
 TEAM_ID=
 
-PRODUCT_NAME=MusicClassRoom
+PRODUCT_NAME=睿音艺术中心
 PRODUCT_BUNDLE_IDENTIFIER=com.music.classroom.MusicClassRoom$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1

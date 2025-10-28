@@ -10,6 +10,8 @@ import androidx.compose.ui.graphics.Color
 //主题色
 val primaryColor: Color = Color(0xFF13227a)
 
+val primaryB3Color: Color = Color(0xB313227a)
+
 
 val unselectPrimaryColor = Color(0xFF8a8a8a)
 
