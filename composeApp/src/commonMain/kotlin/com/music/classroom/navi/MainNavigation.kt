@@ -25,7 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
 import com.music.classroom.page.HomeScreen
-import com.music.classroom.page.OldCourse
+import com.music.classroom.allpage.AllCourse
 import com.music.classroom.setting.DataTransferScreen
 import com.music.classroom.setting.ExcelGenerateScreen
 import com.music.classroom.setting.LessonDefaultScreen
@@ -69,7 +69,7 @@ fun MainNavigation() {
                 startDestination = NavRoutes.Home.route
             ) {
                 composable(NavRoutes.Home.route) { HomeScreen(navController) }
-                composable(NavRoutes.Course.route) { OldCourse() }
+                composable(NavRoutes.Course.route) { AllCourse() }
                 composable(NavRoutes.Profile.route) { ProfileScreen(navController) }
                 // 设置页面路由（确保与 NavRoutes 一致）
                 composable(NavRoutes.ProfileDefault.route) { LessonDefaultScreen(navController) }
