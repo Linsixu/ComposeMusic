@@ -12,6 +12,7 @@ sealed class NavRoutes(val route: String) {
 
     //设置页面
     object ProfileDefault: NavRoutes("setting_lessonDefault") //课时默认值
+    object ProfileMusicTools: NavRoutes("setting_musicTools") //默认乐器
     object ProfileNotification: NavRoutes("setting_notification") //提示功能
     object ProfileDataTransfer: NavRoutes("setting_dataTransfer")//数据传输
     object ProfileExcelGenerate: NavRoutes("setting_excel_generate")//excel表生成

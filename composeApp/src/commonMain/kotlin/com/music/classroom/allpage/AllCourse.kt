@@ -88,7 +88,7 @@ fun AllCourse() {
     var monthMenuExpanded by remember { mutableStateOf(false) }
 
     // 选项列表
-    val yearOptions = (currentDateTime.year - 2..currentDateTime.year + 2).map { it.toString() }
+    val yearOptions = (currentDateTime.year - 5..currentDateTime.year).map { it.toString() }
     val monthOptions = (1..12).map { it.toString() }
 
     // 课程列表数据

@@ -29,6 +29,7 @@ import com.music.classroom.allpage.AllCourse
 import com.music.classroom.setting.DataTransferScreen
 import com.music.classroom.setting.ExcelGenerateScreen
 import com.music.classroom.setting.LessonDefaultScreen
+import com.music.classroom.setting.MusicToolsScreen
 import com.music.classroom.setting.NotificationScreen
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.compose_course_icon
@@ -73,6 +74,7 @@ fun MainNavigation() {
                 composable(NavRoutes.Profile.route) { ProfileScreen(navController) }
                 // 设置页面路由（确保与 NavRoutes 一致）
                 composable(NavRoutes.ProfileDefault.route) { LessonDefaultScreen(navController) }
+                composable(NavRoutes.ProfileMusicTools.route) { MusicToolsScreen(navController) }
                 composable(NavRoutes.ProfileNotification.route) { NotificationScreen(navController) }
                 composable(NavRoutes.ProfileDataTransfer.route) { DataTransferScreen(navController) }
                 composable(NavRoutes.ProfileExcelGenerate.route) { ExcelGenerateScreen(navController) }
@@ -90,6 +92,7 @@ private fun BottomNavigationBar(
     val hideTabRoutes = listOf(
         NavRoutes.ProfileDefault.route, // 核心：LessonDefaultScreen 对应的路由
         // 后续其他需要隐藏 Tab 的页面，直接添加路由即可（如通知、数据传输）
+        NavRoutes.ProfileMusicTools.route,
         NavRoutes.ProfileNotification.route,
         NavRoutes.ProfileDataTransfer.route,
         NavRoutes.ProfileExcelGenerate.route
