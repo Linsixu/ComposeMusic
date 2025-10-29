@@ -45,8 +45,8 @@ fun ProfileScreen(
 ) {
     LaunchedEffect(Unit) {
         val lessonTime = spStorage.getString(DEFAULT_LESSON_DEFAULT_TIME)
-        if (lessonTime.toIntOrNull() != null && lessonTime.toInt() > 0) {
-            SPKeyUtils.currentLessonTime.value = lessonTime.toInt()
+        if (lessonTime.toIntOrNull() != null && lessonTime.toLong() > 0L) {
+            SPKeyUtils.currentLessonTime.value = lessonTime.toLong()
         }
 
         val defaultMusicTools = spStorage.getString(DEFAULT_MUSIC_TOOLS)

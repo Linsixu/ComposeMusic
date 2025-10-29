@@ -43,7 +43,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.music.classroom.SPKeyUtils
 import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
+import com.music.classroom.SPKeyUtils.DEFAULT_MUSIC_TOOLS
 import com.music.classroom.color.primaryB3Color
 import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
@@ -71,6 +73,22 @@ fun InfoInputBottomSheet(
     onSubmit: (title: String, content: String, dateTime: String) -> Unit
 ) {
 
+    LaunchedEffect(Unit) {
+        if (SPKeyUtils.currentLessonTime.value == 0L) {
+            val savedValue = spStorage.getString(DEFAULT_LESSON_DEFAULT_TIME)
+            if (savedValue.toIntOrNull() != null && savedValue.toLong() > 0L) {
+                SPKeyUtils.currentLessonTime.value = savedValue.toLong()
+            }
+        }
+
+        if (SPKeyUtils.currentMusicTools.value.isNullOrBlank()) {
+            val musicTool = spStorage.getString(DEFAULT_MUSIC_TOOLS)
+            if (!musicTool.isNullOrBlank()) {
+                SPKeyUtils.currentMusicTools.value = musicTool
+            }
+        }
+    }
+
     // 底部弹窗状态（可滑动关闭、设置最大高度）
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true, // 跳过半展开状态
@@ -89,8 +107,10 @@ fun InfoInputBottomSheet(
 
     var mSelectedGrade by remember { mutableStateOf<String>("1级") }
     //一节课时间（默认45分钟）
-    var mClassTime by remember { mutableStateOf(DEFAULT_CLASS_MINUTE_TIME) }
+    var mClassTime by remember { SPKeyUtils.currentLessonTime }
 
+    //默认乐器
+    var mDefaultMusicTools by remember { SPKeyUtils.currentMusicTools }
     // 日期/时间选择器状态
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = Clock.System.now().toEpochMilliseconds()
@@ -100,13 +120,6 @@ fun InfoInputBottomSheet(
         initialMinute = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).minute,
         is24Hour = true
     )
-
-    LaunchedEffect(Unit) {
-        val savedValue = spStorage.getString(DEFAULT_LESSON_DEFAULT_TIME)
-        if (savedValue.isNotBlank()) {
-            mClassTime = savedValue.toLong()
-        }
-    }
 
     // 日期转换与合并逻辑（复用之前的实现）
     fun convertMillisToLocalDate(millis: Long): LocalDate {
@@ -192,6 +205,14 @@ fun InfoInputBottomSheet(
                     value = mStudentName,
                     onValueChange = { mStudentName = it },
                     label = { Text("学生姓名") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+
+                OutlinedTextField(
+                    value = mDefaultMusicTools,
+                    onValueChange = { mDefaultMusicTools = it },
+                    label = { Text("乐器") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
