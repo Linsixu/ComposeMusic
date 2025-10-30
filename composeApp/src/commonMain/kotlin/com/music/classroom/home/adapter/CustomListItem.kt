@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +35,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.music.classroom.allpage.CourseItem
 import kotlinx.coroutines.launch
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.list_message_item_delete
@@ -44,14 +49,13 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun CustomListItem(
-    title: String,
-    time: String,
+    course: CourseItem,
     onButton1Click: () -> Unit,
     onButton2Click: () -> Unit
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth().fillMaxHeight()
 // 1. 先设置阴影（外层阴影，避免被padding裁剪）
             .shadow(
                 elevation = 2.dp, // 阴影高度（值越大阴影越明显）
@@ -65,49 +69,59 @@ fun CustomListItem(
                 shape = RoundedCornerShape(12.dp) // 背景圆角（与阴影一致）
             )
             // 3. 最后设置内边距（padding在背景内部，避免内容紧贴边缘）
-            .padding(16.dp)
+//            .padding(16.dp)
     ) {
-        // 名字和时间
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                "${course.studentName} | ${course.musicToolName + course.gradeRange}",
+                fontSize = 16.sp,
+                color = Color.Black
             )
             Text(
-                text = time,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "开始时间：${course.formattedStartTime}",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            Text(
+                "结束时间：${course.formattedEndTime}",
+                fontSize = 14.sp,
+                color = Color.Gray,
                 modifier = Modifier.padding(top = 4.dp)
             )
-        }
+            Text(
+                "课时：${course.lessonMinute}分钟",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(top = 4.dp)
+            )
 
-        // 底部两个按钮
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Button(
-                onClick = onButton1Click,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp)
+
+            // 底部两个按钮
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("编辑")
-            }
-            Button(
-                onClick = onButton2Click,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFF44336),
-                    contentColor = Color.White
-                )
-            ) {
-                Text("详情")
+                Button(
+                    onClick = onButton1Click,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("编辑")
+                }
+                Button(
+                    onClick = onButton2Click,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFF44336),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("详情")
+                }
             }
         }
     }
