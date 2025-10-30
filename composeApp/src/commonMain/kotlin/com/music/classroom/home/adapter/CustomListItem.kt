@@ -3,21 +3,18 @@ package com.music.classroom.home.adapter
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import musicclassroom.composeapp.generated.resources.Res
-import musicclassroom.composeapp.generated.resources.compose_dialog_close_icon
 import musicclassroom.composeapp.generated.resources.list_message_item_delete
 import org.jetbrains.compose.resources.painterResource
 import kotlin.math.roundToInt
@@ -149,7 +145,7 @@ fun SwipeToDeleteItem(
     // 水平滑动手势检测
     val dragModifier = Modifier.pointerInput(Unit) {
         detectHorizontalDragGestures(
-            onDragStart =  { offset ->
+            onDragStart = { offset ->
                 println("magic onDragStart offset=$offset")
             },
             // 拖动过程中更新偏移量
@@ -163,8 +159,11 @@ fun SwipeToDeleteItem(
             onDragEnd = {
                 println("magic onDragEnd")
                 coroutineScope.launch {
-                    if (offsetX < -deleteWidthPx / 2) {
-                        onDelete()
+                    if (offsetX < -(deleteWidthPx / 2)) {
+                        offsetX = -deleteWidthPx
+//                        onDelete()
+                    } else {
+                        offsetX = 0f
                     }
 //                    offsetX = 0f
                 }
@@ -184,16 +183,18 @@ fun SwipeToDeleteItem(
         // 底层：删除图标（左滑时显示）
         Box(
             modifier = Modifier
-                .matchParentSize(),
+                .matchParentSize().clickable {
+                    onDelete()
+                },
 //                .background(backgroundColor),
-            contentAlignment = Alignment.CenterEnd
+            contentAlignment = Alignment.CenterEnd,
         ) {
             //todo Icon会把图片可以tint颜色，如果纯图片用Image
             Image(
                 painter = painterResource(Res.drawable.list_message_item_delete),
                 contentDescription = "删除",
 //                tint = Color.White,
-                modifier = Modifier.padding(end = 10.dp)
+                modifier = Modifier.padding(end = 10.dp),
             )
         }
 

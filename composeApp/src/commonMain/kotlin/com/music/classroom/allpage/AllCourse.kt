@@ -7,16 +7,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
@@ -48,19 +45,22 @@ import kotlinx.datetime.toLocalDateTime
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.select_arrow_down_gray_icon
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 // 课程数据类（使用kotlinx.datetime处理时间）
 data class CourseItem(
     val studentName: String,    // 学生姓名
+    val musicToolName: String, //乐器种类
     val gradeRange: String,     // 考级范围
     val startTime: LocalDateTime, // 开始时间（LocalDateTime类型）
     val lessonMinute: Int        // 课时（单位：分钟）
 ) {
     // 计算结束时间：开始时间 + 课时（基于kotlinx.datetime的plus方法）
-    val startMilliSeconds = startTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+    val startMilliSeconds =
+        startTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
     val endSecondTime = startMilliSeconds + lessonMinute * 60L * 1000L
-    val endDateTime = Instant.fromEpochMilliseconds(endSecondTime).toLocalDateTime(TimeZone.currentSystemDefault())
+    val endDateTime = Instant.fromEpochMilliseconds(endSecondTime)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+
     // 时间格式化（统一格式：yyyy-MM-dd HH:mm）
     @OptIn(FormatStringsInDatetimeFormats::class)
     val dateTimeFormat = LocalDateTime.Format {
@@ -70,6 +70,7 @@ data class CourseItem(
 
     // 格式化后的开始时间字符串
     val formattedStartTime: String = timeFormatter.format(startTime)
+
     // 格式化后的结束时间字符串
     val formattedEndTime: String = timeFormatter.format(endDateTime)
 }
@@ -100,10 +101,10 @@ fun AllCourse() {
         val month = selectedMonth.toIntOrNull()?.coerceIn(1, 12) ?: currentDateTime.monthNumber
 
         courseList = listOf(
-            CourseItem("张三", "钢琴5级", LocalDateTime(year, month, 5, 14, 0), 40),
-            CourseItem("李四", "小提琴3级", LocalDateTime(year, month, 12, 10, 30), 40),
-            CourseItem("王五", "古筝6级", LocalDateTime(year, month, 18, 16, 0), 40),
-            CourseItem("赵六", "吉他4级", LocalDateTime(year, month, 25, 9, 0), 40)
+            CourseItem("张三", "钢琴", "5级", LocalDateTime(year, month, 5, 14, 0), 40),
+            CourseItem("李四", "小提琴", "3级", LocalDateTime(year, month, 12, 10, 30), 40),
+            CourseItem("王五", "古筝", "6级", LocalDateTime(year, month, 18, 16, 0), 40),
+            CourseItem("赵六", "吉他", "4级", LocalDateTime(year, month, 25, 9, 0), 40)
         )
     }
 
@@ -160,7 +161,11 @@ fun AllCourse() {
                     onDismissRequest = { yearMenuExpanded = false },
                     modifier = Modifier
                         .background(Color.White)
-                        .border(1.dp, Color(0xFFEEEEEE), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                        .border(
+                            1.dp,
+                            Color(0xFFEEEEEE),
+                            androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                        )
                 ) {
                     yearOptions.forEach { year ->
                         DropdownMenuItem(
@@ -211,7 +216,11 @@ fun AllCourse() {
                     onDismissRequest = { monthMenuExpanded = false },
                     modifier = Modifier
                         .background(Color.White)
-                        .border(1.dp, Color(0xFFEEEEEE), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                        .border(
+                            1.dp,
+                            Color(0xFFEEEEEE),
+                            androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                        )
                 ) {
                     monthOptions.forEach { month ->
                         DropdownMenuItem(
@@ -264,9 +273,29 @@ private fun CourseListItem(course: CourseItem) {
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("${course.studentName} | ${course.gradeRange}", fontSize = 16.sp, color = Color.Black)
-                Text("开始时间：${course.formattedStartTime}", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 8.dp))
-                Text("课时：${course.lessonMinute}分钟 | 结束时间：${course.formattedEndTime}", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
+                Text(
+                    "${course.studentName} | ${course.musicToolName + course.gradeRange}",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+                Text(
+                    "开始时间：${course.formattedStartTime}",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                Text(
+                    "结束时间：${course.formattedEndTime}",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+                Text(
+                    "课时：${course.lessonMinute}分钟",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
     }
