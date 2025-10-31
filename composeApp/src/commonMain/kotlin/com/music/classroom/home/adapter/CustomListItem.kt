@@ -96,32 +96,35 @@ fun CustomListItem(
                 modifier = Modifier.padding(top = 4.dp)
             )
 
-
-            // 底部两个按钮
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    onClick = onButton1Click,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
+            if (course.signInStatus == 0) {
+                // 底部两个按钮
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("编辑")
+                    Button(
+                        onClick = onButton1Click,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("编辑")
+                    }
+                    Button(
+                        onClick = onButton2Click,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFF44336),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("签到")
+                    }
                 }
-                Button(
-                    onClick = onButton2Click,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFF44336),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("详情")
-                }
+            } else {
+                //已签到不需要展示那2个按钮
             }
         }
     }

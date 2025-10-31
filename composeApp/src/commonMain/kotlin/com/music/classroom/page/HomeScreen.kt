@@ -46,10 +46,10 @@ fun HomeScreen(navController: NavController) {
     // 课程列表数据
     var courseList by remember { mutableStateOf<ArrayList<CourseItem>>(arrayListOf()) }
     courseList = arrayListOf(
-        CourseItem("张三", "钢琴", "5级", LocalDateTime(2025, 11, 5, 14, 0), 40),
-        CourseItem("李四", "小提琴", "3级", LocalDateTime(2025, 11, 12, 10, 30), 40),
-        CourseItem("王五", "古筝", "6级", LocalDateTime(2025, 11, 18, 16, 0), 40),
-        CourseItem("赵六", "吉他", "4级", LocalDateTime(2025, 11, 25, 9, 0), 40)
+        CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(2025, 11, 5, 14, 0), 40),
+        CourseItem("李四", "小提琴", "3级", 1,LocalDateTime(2025, 11, 12, 10, 30), 40),
+        CourseItem("王五", "古筝", "6级", 0, LocalDateTime(2025, 11, 18, 16, 0), 40),
+        CourseItem("赵六", "吉他", "4级", 0, LocalDateTime(2025, 11, 25, 9, 0), 40)
     )
 
     // 新增：控制底部弹窗显示/隐藏的状态
@@ -75,7 +75,18 @@ fun HomeScreen(navController: NavController) {
                     CustomListItem(
                         item,
                         onButton1Click = { /* 编辑逻辑 */ },
-                        onButton2Click = { /* 详情逻辑 */ }
+                        onButton2Click = {
+                            //签到
+                            // 2. 关键修改：创建新列表，替换原列表的引用
+                            courseList = courseList.map { currentItem ->
+                                // 找到当前点击的 item，修改其 signInStatus
+                                if (currentItem.startMilliSeconds == item.startMilliSeconds) {
+                                    currentItem.copy(signInStatus = 1) // 用 copy 生成新对象（推荐）
+                                } else {
+                                    currentItem // 其他 item 保持不变
+                                }
+                            } as ArrayList<CourseItem> // 转换为 ArrayList（若需要）
+                        }
                     )
                 }
             }

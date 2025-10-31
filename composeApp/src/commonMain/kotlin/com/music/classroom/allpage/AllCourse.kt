@@ -51,8 +51,12 @@ data class CourseItem(
     val studentName: String,    // 学生姓名
     val musicToolName: String, //乐器种类
     val gradeRange: String,     // 考级范围
+    var signInStatus: Int? = 0,      //签到状态，0：未签到；1：签到
     val startTime: LocalDateTime, // 开始时间（LocalDateTime类型）
-    val lessonMinute: Int        // 课时（单位：分钟）
+    val lessonMinute: Int,        // 课时（单位：分钟）
+    // 新增：年份和月份（建议与startTime关联，确保数据一致性）
+    val year: Int = startTime.year,  // 从startTime提取年份（如2025）
+    val month: Int = startTime.monthNumber // 从startTime提取月份（1-12）
 ) {
     // 计算结束时间：开始时间 + 课时（基于kotlinx.datetime的plus方法）
     val startMilliSeconds =
@@ -101,10 +105,10 @@ fun AllCourse() {
         val month = selectedMonth.toIntOrNull()?.coerceIn(1, 12) ?: currentDateTime.monthNumber
 
         courseList = listOf(
-            CourseItem("张三", "钢琴", "5级", LocalDateTime(year, month, 5, 14, 0), 40),
-            CourseItem("李四", "小提琴", "3级", LocalDateTime(year, month, 12, 10, 30), 40),
-            CourseItem("王五", "古筝", "6级", LocalDateTime(year, month, 18, 16, 0), 40),
-            CourseItem("赵六", "吉他", "4级", LocalDateTime(year, month, 25, 9, 0), 40)
+            CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(year, month, 5, 14, 0), 40),
+            CourseItem("李四", "小提琴", "3级", 1, LocalDateTime(year, month, 12, 10, 30), 40),
+            CourseItem("王五", "古筝", "6级", 1, LocalDateTime(year, month, 18, 16, 0), 40),
+            CourseItem("赵六", "吉他", "4级", 1, LocalDateTime(year, month, 25, 9, 0), 40)
         )
     }
 
