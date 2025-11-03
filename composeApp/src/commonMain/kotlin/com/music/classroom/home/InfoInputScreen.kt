@@ -2,6 +2,7 @@ package com.music.classroom.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -20,6 +24,7 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,10 +41,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -58,6 +68,7 @@ import com.music.classroom.db.DbSingleton.LocalAppContainer
 import com.music.classroom.db.DbSingleton.staticSQLIO
 import com.music.classroom.home.menu.MenuSelectionBox
 import com.music.classroom.storage.spStorage
+import com.music.classroom.util.hideSoftKeyboard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -84,6 +95,19 @@ fun InfoInputBottomSheet(
     onSubmit: (isSuccess: Boolean) -> Unit
 ) {
     val db = LocalAppContainer.current.dataRepository
+    val focusManager = LocalFocusManager.current
+
+    // 1. 焦点管理核心：焦点管理器 + 每个输入框的焦点请求器
+    val studentNameFocus = remember { FocusRequester() }
+    val teacherNameFocus = remember { FocusRequester() }
+    val musicToolFocus = remember { FocusRequester() }
+    val classTimeFocus = remember { FocusRequester() }
+
+    // 2. 交互源：避免输入框点击被外层布局拦截
+    val studentInteraction = remember { MutableInteractionSource() }
+    val teacherInteraction = remember { MutableInteractionSource() }
+    val musicToolInteraction = remember { MutableInteractionSource() }
+    val classTimeInteraction = remember { MutableInteractionSource() }
 
     LaunchedEffect(Unit) {
         if (SPKeyUtils.currentLessonTime.value == 0L) {
@@ -141,6 +165,9 @@ fun InfoInputBottomSheet(
         initialMinute = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).minute,
         is24Hour = true
     )
+
+    // 1. 关键新增：表单滚动状态（控制表单滚动和自动定位）
+    val formScrollState = rememberScrollState()
 
     // 日期转换与合并逻辑（复用之前的实现）
     fun convertMillisToLocalDate(millis: Long): LocalDate {
@@ -217,7 +244,7 @@ fun InfoInputBottomSheet(
             Box(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "填写信息",
-                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.align(Alignment.Center)
                 )
                 IconButton(
@@ -236,7 +263,10 @@ fun InfoInputBottomSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp),
+                    .weight(1f) // 占据弹窗剩余高度，不挤压按钮
+                    .padding(top = 16.dp)
+                    .verticalScroll(formScrollState) // 表单内容过多时可滚动
+                    .padding(bottom = 12.dp), // 与按钮保持间距，避免紧贴,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // 标题输入框
@@ -244,37 +274,101 @@ fun InfoInputBottomSheet(
                     value = mStudentName,
                     onValueChange = { mStudentName = it },
                     label = { Text("学生姓名") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        // 绑定焦点请求器
+                        .focusRequester(studentNameFocus)
+                        // 点击输入框时获取焦点（避免被 Box 的 clickable 拦截）
+                        .clickable(
+                            indication = null,
+                            interactionSource = studentInteraction) {
+                            studentNameFocus.requestFocus()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        // 4. 关键：添加“完成”按键，点击后收起键盘
+                        imeAction = ImeAction.Next // 下一个输入框，最后一个用 ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { // 对应 ImeAction.Next 的回调
+                            // 移动焦点到下一个输入框
+                            teacherNameFocus.requestFocus()
+                        }
+                    ),
                 )
 
                 OutlinedTextField(
                     value = mTeacherName,
                     onValueChange = { mTeacherName = it },
                     label = { Text("教师名字") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(teacherNameFocus)
+                        .clickable(
+                            interactionSource = teacherInteraction,
+                            indication = null
+                        ) {
+                            teacherNameFocus.requestFocus()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            musicToolFocus.requestFocus() // 切换到乐器输入框
+                        }
+                    ),
                 )
 
                 OutlinedTextField(
                     value = mDefaultMusicTools,
                     onValueChange = { mDefaultMusicTools = it },
                     label = { Text("乐器") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(musicToolFocus)
+                        .clickable(
+                            interactionSource = musicToolInteraction,
+                            indication = null
+                        ) {
+                            musicToolFocus.requestFocus()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            classTimeFocus.requestFocus() // 切换到课时输入框
+                        }
+                    ),
                 )
 
                 OutlinedTextField(
                     value = if (mClassTime == 0L) "" else mClassTime.toString(),
-                    // 2. 安全转换：空字符串/非数字时返回 null，用 ?: 设默认值 0
-                    onValueChange = { input ->
-                        mClassTime = input.toLongOrNull() ?: 0L
-                    },
+                    onValueChange = { mClassTime = it.toLongOrNull() ?: 0L },
                     label = { Text("课时(单位分钟)") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    // 3. 可选：添加输入提示，引导用户输入有效数字
-                    placeholder = { Text("请输入课时（如 40分钟）") }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(classTimeFocus)
+                        .clickable(
+                            interactionSource = classTimeInteraction,
+                            indication = null
+                        ) {
+                            classTimeFocus.requestFocus()
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done // 核心：定义按钮为“完成”
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { // 对应 ImeAction.Done 的回调
+                            focusManager.clearFocus() // 清除所有输入框焦点
+                            hideSoftKeyboard() // 隐藏软键盘
+                        }
+                    ),
+                    placeholder = { Text("请输入课时（如 40分钟）") },
                 )
 
                 // 内容输入框

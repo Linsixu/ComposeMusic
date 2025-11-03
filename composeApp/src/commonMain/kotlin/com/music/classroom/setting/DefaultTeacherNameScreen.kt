@@ -116,7 +116,7 @@ fun DefaultTeacherNameScreen(
                         if (submitTips.isNotBlank()) submitTips = ""
                     },
                     label = { Text("请输入默认教师名称") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
