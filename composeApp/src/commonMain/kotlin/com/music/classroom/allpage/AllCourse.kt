@@ -23,6 +23,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,7 +34,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.music.classroom.color.bgPrimaryColor
+import com.music.classroom.db.DbSingleton.LocalAppContainer
+import com.music.classroom.db.toCourseItem
 import com.music.classroom.home.adapter.SwipeToDeleteItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -89,6 +98,9 @@ data class CourseItem(
 @OptIn(ExperimentalTime::class)
 @Composable
 fun AllCourse() {
+    val db = LocalAppContainer.current.dataRepository
+    val mIOScope: CoroutineScope = CoroutineScope(SupervisorJob() +  Dispatchers.IO)
+
     // 当前时间（kotlinx.datetime）
     val currentDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     val currentYear = currentDateTime.year.toString()
@@ -105,13 +117,23 @@ fun AllCourse() {
     val monthOptions = (1..12).map { it.toString() }
 
     // 课程列表数据
-    var courseList by remember { mutableStateOf<List<CourseItem>>(emptyList()) }
+    val courseList = remember { mutableStateListOf<CourseItem>() }
 
     // 刷新列表
     fun refreshCourseList(selectedYear: String, selectedMonth: String) {
         val year = selectedYear.toIntOrNull() ?: currentDateTime.year
         val month = selectedMonth.toIntOrNull()?.coerceIn(1, 12) ?: currentDateTime.monthNumber
-
+        mIOScope.launch {
+            val response = db.getAllCoursesByYearAndMonth(year, month)
+            withContext(Dispatchers.Main) {
+                if (!response.isNullOrEmpty()) {
+                    courseList.clear()
+                    courseList.addAll(response.toCourseItem())
+                } else {
+                    courseList.clear()
+                }
+            }
+        }
 //        courseList = listOf(
 //            CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(year, month, 5, 14, 0), 40),
 //            CourseItem("李四", "小提琴", "3级", 1, LocalDateTime(year, month, 12, 10, 30), 40),
@@ -120,7 +142,7 @@ fun AllCourse() {
 //        )
     }
 
-    // 初始化刷新
+    // 初始化刷新（todo 初始化变量，要学习记住）
     remember(selectedYear, selectedMonth) {
         refreshCourseList(selectedYear, selectedMonth)
     }
