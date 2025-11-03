@@ -41,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
@@ -63,15 +62,11 @@ import com.music.classroom.allpage.CourseItem
 import com.music.classroom.color.primaryB3Color
 import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
-import com.music.classroom.db.AppContainer
 import com.music.classroom.db.DbSingleton.LocalAppContainer
 import com.music.classroom.db.DbSingleton.staticSQLIO
 import com.music.classroom.home.menu.MenuSelectionBox
 import com.music.classroom.storage.spStorage
 import com.music.classroom.util.hideSoftKeyboard
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -174,6 +169,7 @@ fun InfoInputBottomSheet(
         return Instant.fromEpochMilliseconds(millis)
             .toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
+
     fun combineDateTime(): LocalDateTime? {
         return if (selectedDate != null && selectedTime != null) {
             LocalDateTime(
@@ -182,10 +178,13 @@ fun InfoInputBottomSheet(
             )
         } else null
     }
+
     fun formatDateTime(): String {
         val dateTime = combineDateTime() ?: return ""
         return with(dateTime) {
-            "${year}-${monthNumber.toString().padStart(2, '0')}-${dayOfMonth.toString().padStart(2, '0')} " +
+            "${year}-${monthNumber.toString().padStart(2, '0')}-${
+                dayOfMonth.toString().padStart(2, '0')
+            } " +
                     "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
         }
     }
@@ -196,6 +195,7 @@ fun InfoInputBottomSheet(
         showDatePicker = false
         if (selectedDate != null) showTimePicker = true
     }
+
     fun onConfirmTime() {
         selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
         showTimePicker = false
@@ -207,10 +207,18 @@ fun InfoInputBottomSheet(
             // 处理提交（如保存数据）
             staticSQLIO.launch {
                 val result = runCatching {
-                    CourseItem(id = 0, studentName = mStudentName, musicToolName = mDefaultMusicTools,
-                        gradeRange = mSelectedGrade, signInStatus = 0, startTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) ,
-                        teacherName = mTeacherName, lessonMinute = mClassTime.toInt()).also { item->
-                            println("magic item year=${item.year}, month=${item.month}")
+                    CourseItem(
+                        id = 0,
+                        studentName = mStudentName,
+                        musicToolName = mDefaultMusicTools,
+                        gradeRange = mSelectedGrade,
+                        signInStatus = 0,
+                        startTime = Clock.System.now()
+                            .toLocalDateTime(TimeZone.currentSystemDefault()),
+                        teacherName = mTeacherName,
+                        lessonMinute = mClassTime.toInt()
+                    ).also { item ->
+                        println("magic item year=${item.year}, month=${item.month}")
                         db.insertCourse(item)
                     }
                 }
@@ -241,7 +249,19 @@ fun InfoInputBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 标题栏（带关闭按钮）
-            Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                    // 3. 关键：用独立交互源，避免与输入框点击冲突
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null // 取消点击反馈（避免显示水波纹）
+                ) {
+                    // 2. 点击非输入区域时，收起软键盘
+                    hideSoftKeyboard()
+                    // 可选：同时清除输入框焦点，避免再次点击输入框时键盘闪显
+                    focusManager.clearFocus()
+                }) {
                 Text(
                     text = "填写信息",
                     style = MaterialTheme.typography.titleLarge,
@@ -266,7 +286,17 @@ fun InfoInputBottomSheet(
                     .weight(1f) // 占据弹窗剩余高度，不挤压按钮
                     .padding(top = 16.dp)
                     .verticalScroll(formScrollState) // 表单内容过多时可滚动
-                    .padding(bottom = 12.dp), // 与按钮保持间距，避免紧贴,
+                    .padding(bottom = 12.dp)
+                    .clickable(
+                        // 3. 关键：用独立交互源，避免与输入框点击冲突
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null // 取消点击反馈（避免显示水波纹）
+                    ) {
+                        // 2. 点击非输入区域时，收起软键盘
+                        hideSoftKeyboard()
+                        // 可选：同时清除输入框焦点，避免再次点击输入框时键盘闪显
+                        focusManager.clearFocus()
+                    }, // 与按钮保持间距，避免紧贴,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // 标题输入框
@@ -281,7 +311,8 @@ fun InfoInputBottomSheet(
                         // 点击输入框时获取焦点（避免被 Box 的 clickable 拦截）
                         .clickable(
                             indication = null,
-                            interactionSource = studentInteraction) {
+                            interactionSource = studentInteraction
+                        ) {
                             studentNameFocus.requestFocus()
                         },
                     keyboardOptions = KeyboardOptions(
@@ -398,7 +429,11 @@ fun InfoInputBottomSheet(
                         .fillMaxWidth()
                         .clickable { showDatePicker = true },
                     readOnly = true,
-                    trailingIcon = { Text("⏰", modifier = Modifier.clickable { showDatePicker = true }) }
+                    trailingIcon = {
+                        Text(
+                            "⏰",
+                            modifier = Modifier.clickable { showDatePicker = true })
+                    }
                 )
 
                 // 提交按钮
