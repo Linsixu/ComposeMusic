@@ -117,7 +117,7 @@ fun InfoInputBottomSheet(
     // 输入框状态
     var mStudentName by remember { mutableStateOf("") }
 
-    var mTeacherName by remember { mutableStateOf("") }
+    var mTeacherName by remember { SPKeyUtils.currentTeacherName }
 //    var content by remember { mutableStateOf("") }
 
     // 日期和时间状态
