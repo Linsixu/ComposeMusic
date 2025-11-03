@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.music.classroom.SPKeyUtils
 import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
 import com.music.classroom.SPKeyUtils.DEFAULT_MUSIC_TOOLS
+import com.music.classroom.SPKeyUtils.DEFAULT_TEACHER_NAME
 import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.navi.NavRoutes
 import com.music.classroom.storage.spStorage
@@ -53,6 +54,11 @@ fun ProfileScreen(
         if (defaultMusicTools.isNotBlank()) {
             SPKeyUtils.currentMusicTools.value = defaultMusicTools
         }
+
+        val defaultTeacherName = spStorage.getString(DEFAULT_TEACHER_NAME)
+        if (defaultTeacherName.isNotBlank()) {
+            SPKeyUtils.currentTeacherName.value = defaultTeacherName
+        }
     }
     val defaultLessonTime = remember { SPKeyUtils.currentLessonTime }
     val defaultShowLessonTime = if (defaultLessonTime.value > 0) {
@@ -68,15 +74,24 @@ fun ProfileScreen(
     } else {
         "默认乐器"
     }
+
+    val defaultTeacherName = remember { SPKeyUtils.currentTeacherName }
+    // 动态生成“默认乐器”的标题：有值时显示为“默认乐器（XXX）”
+    val defaultTeacherNameTitle = if (defaultTeacherName.value.isNotBlank()) {
+        "默认教师（${defaultTeacherName.value}）"
+    } else {
+        "默认教师"
+    }
     // 第一组数据：课时默认值、提示功能
     val group1 = listOf(
         ProfileItem(defaultShowLessonTime, route = NavRoutes.ProfileDefault.route),
         ProfileItem(defaultMusicTitle, route = NavRoutes.ProfileMusicTools.route),
-        ProfileItem("提示功能", route = NavRoutes.ProfileNotification.route)
+        ProfileItem(defaultTeacherNameTitle, route = NavRoutes.ProfileTeacherName.route),
     )
 
     // 第二组数据：数据传输、excel表格生成
     val group2 = listOf(
+        ProfileItem("提示功能", route = NavRoutes.ProfileNotification.route),
         ProfileItem("数据传输", route = NavRoutes.ProfileDataTransfer.route),
         ProfileItem("excel表格生成", route = NavRoutes.ProfileExcelGenerate.route)
     )

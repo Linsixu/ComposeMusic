@@ -13,9 +13,13 @@ object SPKeyUtils {
 
     const val DEFAULT_MUSIC_TOOLS = "default_music_tools"
 
+    const val DEFAULT_TEACHER_NAME = "default_teacher_name"
+
     //默认课时
     var currentLessonTime = mutableStateOf(0L)
 
     //默认乐器值
     var currentMusicTools = mutableStateOf("")
+
+    var currentTeacherName = mutableStateOf("")
 }

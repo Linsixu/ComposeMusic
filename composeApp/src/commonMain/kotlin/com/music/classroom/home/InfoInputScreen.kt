@@ -5,9 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
@@ -46,6 +48,7 @@ import androidx.navigation.NavController
 import com.music.classroom.SPKeyUtils
 import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
 import com.music.classroom.SPKeyUtils.DEFAULT_MUSIC_TOOLS
+import com.music.classroom.SPKeyUtils.DEFAULT_TEACHER_NAME
 import com.music.classroom.allpage.CourseItem
 import com.music.classroom.color.primaryB3Color
 import com.music.classroom.color.primaryColor
@@ -96,6 +99,13 @@ fun InfoInputBottomSheet(
                 SPKeyUtils.currentMusicTools.value = musicTool
             }
         }
+
+        if (SPKeyUtils.currentTeacherName.value.isNullOrBlank()) {
+            val teacherName = spStorage.getString(DEFAULT_TEACHER_NAME)
+            if (!teacherName.isNullOrBlank()) {
+                SPKeyUtils.currentTeacherName.value = teacherName
+            }
+        }
     }
 
     // 底部弹窗状态（可滑动关闭、设置最大高度）
@@ -106,6 +116,8 @@ fun InfoInputBottomSheet(
 
     // 输入框状态
     var mStudentName by remember { mutableStateOf("") }
+
+    var mTeacherName by remember { mutableStateOf("") }
 //    var content by remember { mutableStateOf("") }
 
     // 日期和时间状态
@@ -164,13 +176,13 @@ fun InfoInputBottomSheet(
 
     // 提交逻辑
     fun onSubmit() {
-        if (mStudentName.isNotBlank() && mSelectedGrade.isNotBlank() && combineDateTime() != null) {
+        if (mTeacherName.isNotBlank() && mStudentName.isNotBlank() && mSelectedGrade.isNotBlank() && combineDateTime() != null) {
             // 处理提交（如保存数据）
             staticSQLIO.launch {
                 val result = runCatching {
                     CourseItem(id = 0, studentName = mStudentName, musicToolName = mDefaultMusicTools,
                         gradeRange = mSelectedGrade, signInStatus = 0, startTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) ,
-                        lessonMinute = mClassTime.toInt()).also { item->
+                        teacherName = mTeacherName, lessonMinute = mClassTime.toInt()).also { item->
                             println("magic item year=${item.year}, month=${item.month}")
                         db.insertCourse(item)
                     }
@@ -191,13 +203,14 @@ fun InfoInputBottomSheet(
     ModalBottomSheet(
         sheetState = bottomSheetState,
         onDismissRequest = onDismiss, // 点击外部或滑动关闭
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize().fillMaxHeight(0.8f)
     ) {
         // 弹窗内容（滚动布局，避免内容过长溢出）
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
+                .padding(20.dp)
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 标题栏（带关闭按钮）
@@ -224,13 +237,21 @@ fun InfoInputBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // 标题输入框
                 OutlinedTextField(
                     value = mStudentName,
                     onValueChange = { mStudentName = it },
                     label = { Text("学生姓名") },
+                    modifier = Modifier.fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                )
+
+                OutlinedTextField(
+                    value = mTeacherName,
+                    onValueChange = { mTeacherName = it },
+                    label = { Text("教师名字") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
                 )
