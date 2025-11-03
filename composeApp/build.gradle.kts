@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
@@ -17,11 +23,14 @@ kotlin {
     
     listOf(
         iosArm64(),
+        iosX64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            // Required when using NativeSQLiteDriver
+            linkerOpts.add("-lsqlite3")
         }
     }
     
@@ -29,6 +38,10 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+
+            //room
+            implementation(libs.androidx.room.sqlite.wrapper)
+            implementation(libs.androidx.room.compiler)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -46,6 +59,9 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
             //ios 下面没有
 //            implementation("androidx.compose.foundation:foundation:1.9.2")
+            //room
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -82,5 +98,26 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+//    add("kspAndroid", libs.androidx.room.compiler)
+//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+//    add("kspIosX64", libs.androidx.room.compiler)
+//    add("kspIosArm64", libs.androidx.room.compiler)
+
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // 1. 强制统一所有依赖使用 org.jetbrains:annotations:23.0.0（与报错中的高版本匹配）
+        force("org.jetbrains:annotations:23.0.0")
+
+        // 2. 全局排除 com.intellij:annotations（所有版本，彻底移除旧依赖）
+        exclude(
+            group = "com.intellij",
+            module = "annotations" // 匹配所有 com.intellij:annotations 依赖
+        )
+    }
+}

@@ -46,11 +46,19 @@ import androidx.navigation.NavController
 import com.music.classroom.SPKeyUtils
 import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
 import com.music.classroom.SPKeyUtils.DEFAULT_MUSIC_TOOLS
+import com.music.classroom.allpage.CourseItem
 import com.music.classroom.color.primaryB3Color
 import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
+import com.music.classroom.db.AppContainer
+import com.music.classroom.db.DbSingleton.LocalAppContainer
+import com.music.classroom.db.DbSingleton.staticSQLIO
 import com.music.classroom.home.menu.MenuSelectionBox
 import com.music.classroom.storage.spStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
@@ -70,8 +78,9 @@ const val DEFAULT_CLASS_MINUTE_TIME = 45L //分钟
 fun InfoInputBottomSheet(
     navController: NavController,
     onDismiss: () -> Unit, // 关闭弹窗的回调
-    onSubmit: (title: String, content: String, dateTime: String) -> Unit
+    onSubmit: (isSuccess: Boolean) -> Unit
 ) {
+    val db = LocalAppContainer.current.dataRepository
 
     LaunchedEffect(Unit) {
         if (SPKeyUtils.currentLessonTime.value == 0L) {
@@ -157,7 +166,24 @@ fun InfoInputBottomSheet(
     fun onSubmit() {
         if (mStudentName.isNotBlank() && mSelectedGrade.isNotBlank() && combineDateTime() != null) {
             // 处理提交（如保存数据）
-            onDismiss() // 提交后关闭底部弹窗
+            staticSQLIO.launch {
+                val result = runCatching {
+                    CourseItem(id = 0, studentName = mStudentName, musicToolName = mDefaultMusicTools,
+                        gradeRange = mSelectedGrade, signInStatus = 0, startTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()) ,
+                        lessonMinute = mClassTime.toInt()).also { item->
+                            println("magic item year=${item.year}, month=${item.month}")
+                        db.insertCourse(item)
+                    }
+                }
+                if (result.isSuccess) {
+                    println("magic insert data success")
+                    onSubmit.invoke(true)
+                } else {
+                    //todo need show toast
+                    println("magic insert data failure")
+                    onSubmit.invoke(false)
+                }
+            }
         }
     }
 
@@ -218,11 +244,16 @@ fun InfoInputBottomSheet(
                 )
 
                 OutlinedTextField(
-                    value = mClassTime.toString() + "分钟",
-                    onValueChange = { mClassTime = it.toLong() },
-                    label = { Text("课时") },
+                    value = if (mClassTime == 0L) "" else mClassTime.toString(),
+                    // 2. 安全转换：空字符串/非数字时返回 null，用 ?: 设默认值 0
+                    onValueChange = { input ->
+                        mClassTime = input.toLongOrNull() ?: 0L
+                    },
+                    label = { Text("课时(单位分钟)") },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    // 3. 可选：添加输入提示，引导用户输入有效数字
+                    placeholder = { Text("请输入课时（如 40分钟）") }
                 )
 
                 // 内容输入框

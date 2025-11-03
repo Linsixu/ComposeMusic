@@ -6,4 +6,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+
+//    alias(libs.plugins.kotlinKsp) apply false
+//    alias(libs.plugins.androidx.room) apply false
+
 }

@@ -42,26 +42,33 @@ import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.Serializable
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.select_arrow_down_gray_icon
 import org.jetbrains.compose.resources.painterResource
+import kotlin.time.ExperimentalTime
 
 // 课程数据类（使用kotlinx.datetime处理时间）
+@Serializable
 data class CourseItem(
+    val id: Long = 0, // 自增ID
     val studentName: String,    // 学生姓名
     val musicToolName: String, //乐器种类
     val gradeRange: String,     // 考级范围
-    var signInStatus: Int? = 0,      //签到状态，0：未签到；1：签到
+    var signInStatus: Int = 0,      //签到状态，0：未签到；1：签到
     val startTime: LocalDateTime, // 开始时间（LocalDateTime类型）
     val lessonMinute: Int,        // 课时（单位：分钟）
     // 新增：年份和月份（建议与startTime关联，确保数据一致性）
+    val teacherName: String? = "", //老师名字
     val year: Int = startTime.year,  // 从startTime提取年份（如2025）
     val month: Int = startTime.monthNumber // 从startTime提取月份（1-12）
 ) {
     // 计算结束时间：开始时间 + 课时（基于kotlinx.datetime的plus方法）
+    @OptIn(ExperimentalTime::class)
     val startMilliSeconds =
         startTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
     val endSecondTime = startMilliSeconds + lessonMinute * 60L * 1000L
+    @OptIn(ExperimentalTime::class)
     val endDateTime = Instant.fromEpochMilliseconds(endSecondTime)
         .toLocalDateTime(TimeZone.currentSystemDefault())
 
@@ -79,6 +86,7 @@ data class CourseItem(
     val formattedEndTime: String = timeFormatter.format(endDateTime)
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun AllCourse() {
     // 当前时间（kotlinx.datetime）
@@ -104,12 +112,12 @@ fun AllCourse() {
         val year = selectedYear.toIntOrNull() ?: currentDateTime.year
         val month = selectedMonth.toIntOrNull()?.coerceIn(1, 12) ?: currentDateTime.monthNumber
 
-        courseList = listOf(
-            CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(year, month, 5, 14, 0), 40),
-            CourseItem("李四", "小提琴", "3级", 1, LocalDateTime(year, month, 12, 10, 30), 40),
-            CourseItem("王五", "古筝", "6级", 1, LocalDateTime(year, month, 18, 16, 0), 40),
-            CourseItem("赵六", "吉他", "4级", 1, LocalDateTime(year, month, 25, 9, 0), 40)
-        )
+//        courseList = listOf(
+//            CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(year, month, 5, 14, 0), 40),
+//            CourseItem("李四", "小提琴", "3级", 1, LocalDateTime(year, month, 12, 10, 30), 40),
+//            CourseItem("王五", "古筝", "6级", 1, LocalDateTime(year, month, 18, 16, 0), 40),
+//            CourseItem("赵六", "吉他", "4级", 1, LocalDateTime(year, month, 25, 9, 0), 40)
+//        )
     }
 
     // 初始化刷新

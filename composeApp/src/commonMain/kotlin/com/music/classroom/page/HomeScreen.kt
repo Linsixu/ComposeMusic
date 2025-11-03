@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -17,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,35 +28,76 @@ import androidx.navigation.NavController
 import com.music.classroom.allpage.CourseItem
 import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
+import com.music.classroom.db.DbSingleton.LocalAppContainer
+import com.music.classroom.db.toCourseItem
 import com.music.classroom.home.InfoInputBottomSheet
 import com.music.classroom.home.adapter.CustomListItem
 import com.music.classroom.home.adapter.SwipeToDeleteItem
-import kotlinx.datetime.LocalDateTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.add_message_icon
 import org.jetbrains.compose.resources.painterResource
+import kotlin.time.ExperimentalTime
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 
 /**
  * @author: linsixu@ruqimobility.com
  * @date:2025/10/17
  * 用途：
  */
+@OptIn(ExperimentalTime::class)
 @Composable
 fun HomeScreen(navController: NavController) {
+    val db = LocalAppContainer.current.dataRepository
     // 课程列表数据
-    var courseList by remember { mutableStateOf<ArrayList<CourseItem>>(arrayListOf()) }
-    courseList = arrayListOf(
-        CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(2025, 11, 5, 14, 0), 40),
-        CourseItem("李四", "小提琴", "3级", 1,LocalDateTime(2025, 11, 12, 10, 30), 40),
-        CourseItem("王五", "古筝", "6级", 0, LocalDateTime(2025, 11, 18, 16, 0), 40),
-        CourseItem("赵六", "吉他", "4级", 0, LocalDateTime(2025, 11, 25, 9, 0), 40)
-    )
+    val courseList= remember { mutableStateListOf<CourseItem>() }
+//    courseList = arrayListOf(
+//        CourseItem("张三", "钢琴", "5级", 1, LocalDateTime(2025, 11, 5, 14, 0), 40),
+//        CourseItem("李四", "小提琴", "3级", 1,LocalDateTime(2025, 11, 12, 10, 30), 40),
+//        CourseItem("王五", "古筝", "6级", 0, LocalDateTime(2025, 11, 18, 16, 0), 40),
+//        CourseItem("赵六", "吉他", "4级", 0, LocalDateTime(2025, 11, 25, 9, 0), 40)
+//    )
 
     // 新增：控制底部弹窗显示/隐藏的状态
     val (showSheet, setShowSheet) = remember { mutableStateOf(false) }
 
+    val mIOScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     // 关键：用 Box 容器包裹列表和悬浮按钮
     // Box 会让子元素堆叠显示，便于悬浮按钮覆盖在列表上方
+    LaunchedEffect(Unit) {
+        println("magic LaunchedEffect")
+        val currentLocalDateTime =
+            Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        println("magic response1 year=${currentLocalDateTime.year}, month=${currentLocalDateTime.monthNumber}")
+        val response = db.getAllCoursesByYearAndMonth(
+            currentLocalDateTime.year,
+            currentLocalDateTime.monthNumber
+        )
+//        val response = db.getAllAsFlow()
+        println("magic response2")
+        println("magic response3")
+        withContext(Dispatchers.Main) {
+            response.collect {
+                println("magic response4")
+                it.forEach {
+                    println("magic year=${it.year}, month=${it.month}, id=${it.id}, startTime=${it.startTime}")
+                }
+                println("magic response5")
+                courseList.clear()
+                courseList.addAll(it.toCourseItem())
+                println("magic response6")
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(bgPrimaryColor)) {
         // 列表（占满屏幕）
         LazyColumn(
@@ -77,15 +118,22 @@ fun HomeScreen(navController: NavController) {
                         onButton1Click = { /* 编辑逻辑 */ },
                         onButton2Click = {
                             //签到
-                            // 2. 关键修改：创建新列表，替换原列表的引用
-                            courseList = courseList.map { currentItem ->
-                                // 找到当前点击的 item，修改其 signInStatus
+                            val updatedCourseList = courseList.map { currentItem ->
+                                // 找到当前点击的课程项（通过唯一标识 startMilliSeconds 匹配）
                                 if (currentItem.startMilliSeconds == item.startMilliSeconds) {
-                                    currentItem.copy(signInStatus = 1) // 用 copy 生成新对象（推荐）
+                                    // 用 copy 生成新对象（不修改原对象，符合 Compose 不可变数据推荐实践）
+                                    currentItem.copy(signInStatus = 1)
                                 } else {
-                                    currentItem // 其他 item 保持不变
+                                    // 其他项保持不变，直接返回原对象
+                                    currentItem
                                 }
-                            } as ArrayList<CourseItem> // 转换为 ArrayList（若需要）
+                            }
+
+                            // 关键：更新 mutableStateListOf 内部元素（清空旧数据 + 添加新数据）
+                            // 1. 先清空原列表（避免旧数据残留）
+                            courseList.clear()
+                            // 2. 添加修改后的新列表（触发 mutableStateListOf 感知变化，进而刷新页面）
+                            courseList.addAll(updatedCourseList)
                         }
                     )
                 }
@@ -116,10 +164,26 @@ fun HomeScreen(navController: NavController) {
                 navController = navController,
                 onDismiss = { setShowSheet(false) }, // 关闭弹窗
                 // 新增：接收表单提交的数据（替代原来的 savedStateHandle 传递）
-                onSubmit = { title, content, dateTime ->
+                onSubmit = { isSuccess ->
                     // 处理提交的数据（如更新列表、保存到数据库）
                     // ...
-                    setShowSheet(false) // 提交后关闭弹窗
+                    if (isSuccess) {
+                        setShowSheet(false) // 提交后关闭弹窗
+                        val currentLocalDateTime =
+                            Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                        mIOScope.launch {
+                            val response = db.getAllCoursesByYearAndMonth(
+                                currentLocalDateTime.year,
+                                currentLocalDateTime.monthNumber
+                            )
+                            response.collect {
+                                println("magic year=${currentLocalDateTime.year}, month=${currentLocalDateTime.monthNumber}, size=${it.size}")
+                                withContext(Dispatchers.Main) {
+                                    courseList.addAll(it.toCourseItem())
+                                }
+                            }
+                        }
+                    }
                 }
             )
         }

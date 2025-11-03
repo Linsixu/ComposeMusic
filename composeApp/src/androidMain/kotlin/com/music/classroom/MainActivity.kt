@@ -5,7 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.tooling.preview.Preview
+import com.music.classroom.db.DbSingleton.LocalAppContainer
 import com.music.classroom.util.StatusBarController
 
 class MainActivity : ComponentActivity() {
@@ -15,7 +17,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         mStatusBarControlledComposition.init(this)
         setContent {
-            App(statusBarController = mStatusBarControlledComposition)
+            CompositionLocalProvider(
+                LocalAppContainer provides (this.applicationContext as MusicApplication).container,
+            ) {
+                App(statusBarController = mStatusBarControlledComposition)
+            }
         }
     }
 }
