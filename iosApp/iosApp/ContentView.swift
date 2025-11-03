@@ -48,10 +48,15 @@ class ComposeContainerViewController: UIViewController {
 
 // 2. 包装为 SwiftUI 组件
 struct ComposeView: UIViewControllerRepresentable {
+    @EnvironmentObject var appContainer: ObservableValueWrapper<AppContainer>
+    
     func makeUIViewController(context: Context) -> UIViewController {
+        //room
+        let kmmAppContainer = appContainer.value
+        
         let containerVC = ComposeContainerViewController()
         // 添加 Compose 视图
-        let composeVC = MainViewControllerKt.MainViewController()
+        let composeVC = MainViewControllerKt.MainViewController(appContainer: kmmAppContainer)
         containerVC.addChild(composeVC)
         composeVC.view.frame = containerVC.view.bounds
         containerVC.view.addSubview(composeVC.view)

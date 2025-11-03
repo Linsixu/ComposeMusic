@@ -85,7 +85,7 @@ fun HomeScreen(navController: NavController) {
         println("magic response2")
         println("magic response3")
         withContext(Dispatchers.Main) {
-            response.collect {
+            response.let {
                 println("magic response4")
                 it.forEach {
                     println("magic year=${it.year}, month=${it.month}, id=${it.id}, startTime=${it.startTime}")
@@ -176,7 +176,7 @@ fun HomeScreen(navController: NavController) {
                                 currentLocalDateTime.year,
                                 currentLocalDateTime.monthNumber
                             )
-                            response.collect {
+                            response.let {
                                 println("magic year=${currentLocalDateTime.year}, month=${currentLocalDateTime.monthNumber}, size=${it.size}")
                                 withContext(Dispatchers.Main) {
                                     courseList.addAll(it.toCourseItem())

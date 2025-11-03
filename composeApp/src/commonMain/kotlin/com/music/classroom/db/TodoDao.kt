@@ -23,14 +23,14 @@ interface TodoDao {
     suspend fun count(): Int
 
     @Query("SELECT * FROM TodoEntity WHERE year =:year and month =:month")
-    fun getAllCourseByYearAndMonth(year: Int, month: Int): Flow<List<TodoEntity>>
+    suspend fun getAllCourseByYearAndMonth(year: Int, month: Int): List<TodoEntity>
 
     @Query("SELECT * FROM TodoEntity")
-    fun getAllAsFlow(): Flow<List<TodoEntity>>
+    suspend fun getAllAsFlow(): List<TodoEntity>
 
     @Delete
-    fun deleteCourse(item: TodoEntity)
+    suspend fun deleteCourse(item: TodoEntity)
 
     @Update
-    fun updateCourse(item: TodoEntity)
+    suspend fun updateCourse(item: TodoEntity)
 }

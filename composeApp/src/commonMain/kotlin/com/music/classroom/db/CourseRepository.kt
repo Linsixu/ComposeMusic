@@ -29,11 +29,11 @@ class CourseRepository(
     }
 
     // 查询所有课程
-    suspend fun getAllCoursesByYearAndMonth(year: Int, month: Int): Flow<List<TodoEntity>> {
+    suspend fun getAllCoursesByYearAndMonth(year: Int, month: Int): List<TodoEntity> {
         return database.getDao().getAllCourseByYearAndMonth(year, month)
     }
 
-    fun getAllAsFlow(): Flow<List<TodoEntity>> {
+    suspend fun getAllAsFlow(): List<TodoEntity> {
         return database.getDao().getAllAsFlow()
     }
 }
