@@ -70,6 +70,8 @@ fun HomeScreen(navController: NavController) {
     // 新增：控制底部弹窗显示/隐藏的状态
     val (showSheet, setShowSheet) = remember { mutableStateOf(false) }
 
+    val changeCourseItem = remember { mutableStateOf<CourseItem?>(null) }
+
     val mIOScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     // 关键：用 Box 容器包裹列表和悬浮按钮
     // Box 会让子元素堆叠显示，便于悬浮按钮覆盖在列表上方
@@ -121,7 +123,8 @@ fun HomeScreen(navController: NavController) {
                                 withContext(Dispatchers.Main) {
                                     if (result > 0) {
                                         showToast("删除成功")
-                                        val updatedCourseList = courseList.filter { it.id != item.id}
+                                        val updatedCourseList =
+                                            courseList.filter { it.id != item.id }
                                         courseList.clear()
                                         // 2. 添加修改后的新列表（触发 mutableStateListOf 感知变化，进而刷新页面）
                                         courseList.addAll(updatedCourseList)
@@ -131,13 +134,28 @@ fun HomeScreen(navController: NavController) {
                                 }
                             }
                         }) {
-                        CustomListItem(item, onButton1Click = { /* 编辑逻辑 */ }, onButton2Click = {
+                        CustomListItem(item, onButton1Click = { /* 编辑逻辑 */
+                            changeCourseItem.value = item
+                            setShowSheet(true)
+                        }, onButton2Click = {
+
                             //签到
                             val updatedCourseList = courseList.map { currentItem ->
                                 // 找到当前点击的课程项（通过唯一标识 startMilliSeconds 匹配）
                                 if (currentItem.startMilliSeconds == item.startMilliSeconds) {
                                     // 用 copy 生成新对象（不修改原对象，符合 Compose 不可变数据推荐实践）
-                                    currentItem.copy(signInStatus = 1)
+                                    currentItem.copy(signInStatus = 1).apply {
+                                        mIOScope.launch {
+                                            val index = db.updateCourseItem(this@apply)
+                                            withContext(Dispatchers.Main) {
+                                                if (index > 0) {
+                                                    showToast("签到成功")
+                                                } else {
+                                                    showToast("签到失败")
+                                                }
+                                            }
+                                        }
+                                    }
                                 } else {
                                     // 其他项保持不变，直接返回原对象
                                     currentItem
@@ -175,7 +193,11 @@ fun HomeScreen(navController: NavController) {
         // 条件显示底部弹窗（核心修改）
         if (showSheet) {
             InfoInputBottomSheet(
-                navController = navController, onDismiss = { setShowSheet(false) }, // 关闭弹窗
+                navController = navController, onDismiss = {
+                    changeCourseItem.value = null
+                    setShowSheet(false)
+                }, // 关闭弹窗
+                changeItem = changeCourseItem.value,
                 // 新增：接收表单提交的数据（替代原来的 savedStateHandle 传递）
                 onSubmit = { isSuccess ->
                     // 处理提交的数据（如更新列表、保存到数据库）

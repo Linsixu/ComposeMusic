@@ -40,6 +40,10 @@ class CourseRepository(
     suspend fun deleteCourseItem(course: CourseItem): Int {
         return database.getDao().deleteCourse(course.toTodoEntity())
     }
+
+    suspend fun updateCourseItem(course: CourseItem): Int {
+        return database.getDao().updateCourse(course.toTodoEntity())
+    }
 }
 
 @OptIn(ExperimentalTime::class)

@@ -97,7 +97,6 @@ data class CourseItem(
     val formattedEndTime: String = timeFormatter.format(endDateTime)
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun AllCourse() {
     val db = LocalAppContainer.current.dataRepository
@@ -326,6 +325,7 @@ private fun CourseListItem(course: CourseItem, deleteCallback: (course: CourseIt
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White)
         ) {
+            val text = if (course.signInStatus == 0) "未签到" else "已签到"
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     "${course.studentName} | ${course.musicToolName + course.gradeRange}",
@@ -345,7 +345,7 @@ private fun CourseListItem(course: CourseItem, deleteCallback: (course: CourseIt
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
-                    "课时：${course.lessonMinute}分钟",
+                    "课时：${course.lessonMinute}分钟 | 签到状态：$text",
                     fontSize = 14.sp,
                     color = Color.Gray,
                     modifier = Modifier.padding(top = 4.dp)

@@ -32,5 +32,5 @@ interface TodoDao {
     suspend fun deleteCourse(item: TodoEntity): Int
 
     @Update
-    suspend fun updateCourse(item: TodoEntity)
+    suspend fun updateCourse(item: TodoEntity): Int
 }

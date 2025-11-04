@@ -64,6 +64,7 @@ import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
 import com.music.classroom.db.DbSingleton.LocalAppContainer
 import com.music.classroom.db.DbSingleton.staticSQLIO
+import com.music.classroom.db.toCourseItem
 import com.music.classroom.home.menu.MenuSelectionBox
 import com.music.classroom.storage.spStorage
 import com.music.classroom.util.hideSoftKeyboard
@@ -86,6 +87,7 @@ const val DEFAULT_CLASS_MINUTE_TIME = 45L //分钟
 @Composable
 fun InfoInputBottomSheet(
     navController: NavController,
+    changeItem: CourseItem? = null,
     onDismiss: () -> Unit, // 关闭弹窗的回调
     onSubmit: (isSuccess: Boolean) -> Unit
 ) {
@@ -103,6 +105,26 @@ fun InfoInputBottomSheet(
     val teacherInteraction = remember { MutableInteractionSource() }
     val musicToolInteraction = remember { MutableInteractionSource() }
     val classTimeInteraction = remember { MutableInteractionSource() }
+
+
+    // 输入框状态
+    var mStudentName by remember { mutableStateOf("") }
+
+    var mTeacherName by remember { SPKeyUtils.currentTeacherName }
+    //默认乐器
+    var mDefaultMusicTools by remember { SPKeyUtils.currentMusicTools }
+
+    //一节课时间（默认45分钟）
+    var mClassTime by remember { SPKeyUtils.currentLessonTime }
+
+    var mSelectedGrade by remember { mutableStateOf<String>("1级") }
+
+    // 日期和时间状态
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
+    var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (SPKeyUtils.currentLessonTime.value == 0L) {
@@ -125,6 +147,16 @@ fun InfoInputBottomSheet(
                 SPKeyUtils.currentTeacherName.value = teacherName
             }
         }
+
+        if (changeItem != null) {
+            mStudentName = changeItem.studentName
+            mTeacherName = changeItem.teacherName ?: ""
+            mDefaultMusicTools = changeItem.musicToolName
+            mClassTime = changeItem.lessonMinute.toLong()
+            mSelectedGrade = changeItem.gradeRange
+            selectedDate = changeItem.startTime.date
+            selectedTime = changeItem.startTime.time
+        }
     }
 
     // 底部弹窗状态（可滑动关闭、设置最大高度）
@@ -133,24 +165,8 @@ fun InfoInputBottomSheet(
 //        hideOnScroll = true // 向下滑动时关闭
     )
 
-    // 输入框状态
-    var mStudentName by remember { mutableStateOf("") }
 
-    var mTeacherName by remember { SPKeyUtils.currentTeacherName }
-//    var content by remember { mutableStateOf("") }
 
-    // 日期和时间状态
-    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    var mSelectedGrade by remember { mutableStateOf<String>("1级") }
-    //一节课时间（默认45分钟）
-    var mClassTime by remember { SPKeyUtils.currentLessonTime }
-
-    //默认乐器
-    var mDefaultMusicTools by remember { SPKeyUtils.currentMusicTools }
     // 日期/时间选择器状态
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = Clock.System.now().toEpochMilliseconds()
@@ -208,7 +224,7 @@ fun InfoInputBottomSheet(
             staticSQLIO.launch {
                 val result = runCatching {
                     CourseItem(
-                        id = 0,
+                        id = changeItem?.id ?: 0,
                         studentName = mStudentName,
                         musicToolName = mDefaultMusicTools,
                         gradeRange = mSelectedGrade,
