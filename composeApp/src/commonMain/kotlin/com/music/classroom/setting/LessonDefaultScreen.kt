@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,6 +38,7 @@ import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
 import com.music.classroom.color.unselectPrimaryColor
 import com.music.classroom.storage.spStorage
+import com.music.classroom.util.showToast
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.today_class_back
 import org.jetbrains.compose.resources.painterResource
@@ -48,6 +50,7 @@ fun LessonDefaultScreen(
 ) {
     var inputValue by remember { mutableStateOf("") }
     var submitTips by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
         val savedValue = spStorage.getString(DEFAULT_LESSON_DEFAULT_TIME)
@@ -123,8 +126,11 @@ fun LessonDefaultScreen(
                             inputValue.isBlank() -> submitTips = "请输入课时值"
                             inputValue.toIntOrNull() == null -> submitTips = "请输入有效的数字"
                             else -> {
+                                focusManager.clearFocus()
                                 spStorage.saveString(DEFAULT_LESSON_DEFAULT_TIME, inputValue)
-                                submitTips = "提交成功"
+                                submitTips = "保存成功"
+                                showToast("保存成功")
+                                navController.popBackStack()
                             }
                         }
                     },
