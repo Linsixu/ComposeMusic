@@ -36,11 +36,16 @@ class CourseRepository(
     suspend fun getAllAsFlow(): List<TodoEntity> {
         return database.getDao().getAllAsFlow()
     }
+
+    suspend fun deleteCourseItem(course: CourseItem): Int {
+        return database.getDao().deleteCourse(course.toTodoEntity())
+    }
 }
 
 @OptIn(ExperimentalTime::class)
 fun CourseItem.toTodoEntity(): TodoEntity {
     return TodoEntity(
+        id = this.id,
         studentName = this.studentName,
         musicToolName = this.musicToolName,
         gradeRange = this.gradeRange,

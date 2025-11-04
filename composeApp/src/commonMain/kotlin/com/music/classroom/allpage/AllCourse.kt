@@ -77,6 +77,7 @@ data class CourseItem(
     val startMilliSeconds =
         startTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
     val endSecondTime = startMilliSeconds + lessonMinute * 60L * 1000L
+
     @OptIn(ExperimentalTime::class)
     val endDateTime = Instant.fromEpochMilliseconds(endSecondTime)
         .toLocalDateTime(TimeZone.currentSystemDefault())
@@ -99,7 +100,7 @@ data class CourseItem(
 @Composable
 fun AllCourse() {
     val db = LocalAppContainer.current.dataRepository
-    val mIOScope: CoroutineScope = CoroutineScope(SupervisorJob() +  Dispatchers.IO)
+    val mIOScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // 当前时间（kotlinx.datetime）
     val currentDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -287,8 +288,24 @@ fun AllCourse() {
                     )
                 }
             } else {
-                items(courseList) { course ->
-                    CourseListItem(course = course)
+                items(courseList, key = { it.id }) { course ->
+                    CourseListItem(course = course) { deleteItem ->
+                        mIOScope.launch {
+                            val result = db.deleteCourseItem(deleteItem)
+                            withContext(Dispatchers.Main) {
+                                if (result > 0) {
+                                    println("magic 删除成功")
+                                    val updatedCourseList =
+                                        courseList.filter { it.id != deleteItem.id }
+                                    courseList.clear()
+                                    // 2. 添加修改后的新列表（触发 mutableStateListOf 感知变化，进而刷新页面）
+                                    courseList.addAll(updatedCourseList)
+                                } else {
+                                    println("magic 删除失败")
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -297,9 +314,11 @@ fun AllCourse() {
 
 // 课程列表Item
 @Composable
-private fun CourseListItem(course: CourseItem) {
+private fun CourseListItem(course: CourseItem, deleteCallback: (course: CourseItem) -> Unit) {
     SwipeToDeleteItem(
-        onDelete = { /* 执行删除逻辑，如从列表中移除 item */ }
+        onDelete = { /* 执行删除逻辑，如从列表中移除 item */
+            deleteCallback.invoke(course)
+        }
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),

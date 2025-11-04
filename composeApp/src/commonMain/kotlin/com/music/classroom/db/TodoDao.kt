@@ -29,7 +29,7 @@ interface TodoDao {
     suspend fun getAllAsFlow(): List<TodoEntity>
 
     @Delete
-    suspend fun deleteCourse(item: TodoEntity)
+    suspend fun deleteCourse(item: TodoEntity): Int
 
     @Update
     suspend fun updateCourse(item: TodoEntity)
