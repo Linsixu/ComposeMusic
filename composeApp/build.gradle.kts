@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -80,6 +81,14 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+    signingConfigs {
+        create("release") {
+            keyAlias = "key0"
+            keyPassword = "123456"
+            storeFile = file("../music-sister.jks")
+            storePassword = "123456"
+        }
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -88,6 +97,15 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+        }
+        release {
+            signingConfig = signingConfigs.getByName("release") // 关联上面定义的 "release" 签名
+            isMinifyEnabled = false // 启用混淆（可选）
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            // 其他 release 配置（如 debuggable = false）
         }
     }
     compileOptions {
