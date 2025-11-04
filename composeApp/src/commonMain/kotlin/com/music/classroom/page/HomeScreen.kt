@@ -35,6 +35,7 @@ import com.music.classroom.db.toCourseItem
 import com.music.classroom.home.InfoInputBottomSheet
 import com.music.classroom.home.adapter.CustomListItem
 import com.music.classroom.home.adapter.SwipeToDeleteItem
+import com.music.classroom.util.showToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -119,13 +120,13 @@ fun HomeScreen(navController: NavController) {
                                 val result = db.deleteCourseItem(item)
                                 withContext(Dispatchers.Main) {
                                     if (result > 0) {
-                                        println("删除成功")
+                                        showToast("删除成功")
                                         val updatedCourseList = courseList.filter { it.id != item.id}
                                         courseList.clear()
                                         // 2. 添加修改后的新列表（触发 mutableStateListOf 感知变化，进而刷新页面）
                                         courseList.addAll(updatedCourseList)
                                     } else {
-                                        println("删除失败")
+                                        showToast("删除失败")
                                     }
                                 }
                             }
