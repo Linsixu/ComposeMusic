@@ -7,3 +7,7 @@ bin/
 .DS_Store
 iosApp/.DS_Store
 iosApp/iosApp.xcodeproj/project.xcworkspace/
+
+/server/build
+/shared/build
+.kotlin

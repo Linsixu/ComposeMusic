@@ -56,10 +56,10 @@
 //    return ""
 //}
 //
-//// The Room compiler generates the `actual` implementations.
-////@Suppress("KotlinNoActualForExpect")
-////actual object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
-////    actual override fun initialize(): AppDatabase {
-////        return getDatabaseBuilder().build()
-////    }
-////}
+// The Room compiler generates the `actual` implementations.
+//@Suppress("KotlinNoActualForExpect")
+//actual object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
+//    actual override fun initialize(): AppDatabase {
+//        return getDatabaseBuilder().build()
+//    }
+//}
