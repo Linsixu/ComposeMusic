@@ -1,24 +1,22 @@
 package org.example.project
 
-import com.mysql.cj.log.Log
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.json.Json
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
-import io.ktor.server.request.receive
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.response.respond
+import io.ktor.server.routing.routing
+import kotlinx.serialization.json.Json
 import org.example.project.db.DatabaseFactory
-import org.example.project.db.bean.User
-import org.example.project.db.bean.UserDao
-import org.example.project.db.request.UserRequest
+import org.example.project.db.manager.CourseReservationService
+import org.example.project.db.model.ApiResponse
+import org.example.project.route.courseReservationRoutes
 
 fun main() {
     embeddedServer(Netty, port = SERVER_PORT, host = HOST, module = Application::module)
@@ -59,31 +57,17 @@ fun Application.module() {
         // 5. 是否允许发送凭据（如 Cookie）
         // allowCredentials = true
     }
-
+    install(StatusPages) {
+        exception<IllegalArgumentException> { call, e ->
+            call.respond(ApiResponse(success = false, data = null, message = e.message ?: "参数错误"))
+        }
+        exception<Exception> { call, e ->
+            call.respond(ApiResponse(success = false, data = null, message = "服务器内部错误：${e.message}"))
+        }
+    }
     DatabaseFactory.init()
-    val userDao = UserDao()
+    val service = CourseReservationService()
     routing {
-        // 新增用户接口（POST /user）
-        post("/user") {
-            val user = call.receive<UserRequest>() // 接收前端传的用户数据
-            println("Ktor 收到原始字符串: $user")
-            val saveUer = User(null, user.name, user.parentPhone, user.sex)
-            val userId = userDao.createUser(saveUer) // 存储到数据库
-            call.respondText("用户创建成功，ID：$userId")
-        }
-        // 查询用户接口（GET /user/{id}）
-        get("/user/{id}") {
-            val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("ID不能为空")
-            val user = userDao.getUserById(id)
-            if (user != null) {
-                call.respond(user) // 返回用户数据
-            } else {
-                call.respondText("用户不存在", status = HttpStatusCode(404, "参数错误"))
-            }
-        }
-
-//        get("/") {
-//            call.respondText("Ktor: ${Greeting().greet()}")
-//        }
+        courseReservationRoutes(service)
     }
 }

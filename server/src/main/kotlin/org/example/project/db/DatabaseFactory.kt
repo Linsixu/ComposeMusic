@@ -15,7 +15,7 @@ object DatabaseFactory {
     // 初始化数据库连接（调用一次即可，如在 Ktor 启动时）
     fun init() {
         val config = HikariConfig().apply {
-            jdbcUrl = "jdbc:mysql://localhost:3306/user_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+            jdbcUrl = "jdbc:mysql://localhost:3306/class_room?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 //            driverClassName = "com.mysql.cj.jdbc.Driver"
             username = "root" // 你的 MySQL 用户名
             password = "12345678" // 你的 MySQL 密码

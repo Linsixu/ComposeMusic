@@ -48,4 +48,5 @@ dependencies {
     // Ktor 3.x 序列化插件
     implementation("io.ktor:ktor-server-content-negotiation-jvm:3.0.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:3.0.0")
+    implementation(libs.ktorServerStatus)
 }
