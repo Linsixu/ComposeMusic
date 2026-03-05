@@ -27,8 +27,11 @@ fun Application.module() {
     // 必须安装这个插件，否则 POST 的 JSON 无法被识别 (415 根源)
     install(ContentNegotiation) {
         json(Json {
+            // 核心配置1：强制序列化默认值字段（classDuration=60会被序列化）
+            encodeDefaults = true
             prettyPrint = true
             isLenient = true
+            // 核心配置2：字段名使用驼峰（和前端保持一致）
             ignoreUnknownKeys = true // 建议开启，防止前端多传字段导致报错
             isLenient = true          // 宽容模式，允许不规范的 JSON（如 key 没加引号）
             coerceInputValues = true // 强制转换输入值（非常有用！）

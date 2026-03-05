@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 // 基础响应模型
@@ -58,6 +59,7 @@ data class CourseTemplate(
     val templateName: String,
     val subject: String? = null,
     val teacherId: Long,
+    @SerialName("classDuration")
     val classDuration: Int = 60,
     val description: String? = null,
     @Serializable(with = LocalDateTimeIso8601Serializer::class)
