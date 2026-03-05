@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>约课系统接口测试平台 | H5</title>
+
+    <!-- Vue 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+    <!-- Remix Icon -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.6.0/fonts/remixicon.min.css">
+
+    <style>
+        :root {
+            --primary: #1b60ff;
+            --primary-2: #2b7cff;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --text-900: #111827;
+            --text-700: #374151;
+            --text-500: #6b7280;
+            --border: #e5e7eb;
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+
+            --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
+            --shadow-md: 0 8px 24px rgba(16, 24, 40, 0.12);
+
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text-900);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* App Shell */
+        .app {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #0f1a3a;
+            color: #e5edff;
+            padding: 20px 16px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 16px;
+        }
+
+        .brand-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary) 0%, #7aa7ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .brand-subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            color: #cbd5f5;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        .nav-item.active,
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.15);
+            color: #ffffff;
+        }
+
+        /* Main */
+        .main {
+            padding: 20px 24px 40px;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .topbar-title {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .topbar-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .topbar-title p {
+            font-size: 12px;
+            color: var(--text-500);
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .content {
+            margin-top: 16px;
+            display: grid;
+            gap: 16px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: 18px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .card-title i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        /* Form */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 12px;
+        }
+
+        .form-col-6 { grid-column: span 6; }
+        .form-col-12 { grid-column: span 12; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            color: var(--text-700);
+            font-weight: 500;
+        }
+
+        .form-control, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: #f9fafb;
+            transition: var(--transition);
+            font-size: 13px;
+        }
+
+        .form-control:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(27, 96, 255, 0.15);
+            background: #fff;
+        }
+
+        /* Buttons */
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0f52f5;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-ghost {
+            background: #f3f4f6;
+            color: var(--text-700);
+            border-color: var(--border);
+        }
+
+        .btn-ghost:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: #fff;
+        }
+
+        /* Lists */
+        .list {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .list-item {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .list-desc {
+            font-size: 12px;
+            color: var(--text-500);
+        }
+
+        /* Status */
+        .status-tag {
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #f3f4f6;
+            color: var(--text-700);
+        }
+
+        .status-success { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+        .status-warning { background: rgba(245, 158, 11, 0.12); color: var(--warning); }
+        .status-danger { background: rgba(239, 68, 68, 0.12); color: var(--danger); }
+        .status-default { background: #f3f4f6; color: var(--text-500); }
+
+        /* Result */
+        .result-box {
+            margin-top: 12px;
+            background: #0b1220;
+            color: #d1d5db;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: "Consolas", "Monaco", monospace;
+        }
+
+        .result-card {
+            border-left: 4px solid var(--primary);
+            background: #f0f6ff;
+            padding: 12px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-top: 12px;
+        }
+
+        .result-success { border-left-color: var(--success); background: rgba(22,163,74,0.06); }
+        .result-error { border-left-color: var(--danger); background: rgba(239,68,68,0.06); }
+
+        .result-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .result-message {
+            font-size: 12px;
+            color: var(--text-700);
+        }
+
+        /* Empty */
+        .empty-state {
+            text-align: center;
+            padding: 26px 0;
+            color: var(--text-500);
+            font-size: 12px;
+        }
+
+        .empty-state i {
+            font-size: 28px;
+            opacity: 0.5;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-size: 12px;
+            color: var(--text-700);
+            line-height: 1.6;
+        }
+
+        /* Notice */
+        .notice {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #9a3412;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        /* Tab Navigation */
+        .sub-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .sub-nav-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-500);
+            transition: var(--transition);
+        }
+
+        .sub-nav-item.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .sub-nav-item:hover:not(.active) {
+            color: var(--text-700);
+            background: #f9fafb;
+        }
+
+        /* Responsive */
+        @media (max-width: 980px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                height: auto;
+                position: static;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            .nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .main {
+                padding: 16px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-col-6, .form-col-12 {
+                grid-column: span 1;
+            }
+        }
+        
+        .class-select {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .class-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .class-item:hover {
+            background: #f9fafb;
+            border-color: var(--primary);
+        }
+        
+        .class-item.selected {
+            background: #eef2ff;
+            border-color: var(--primary);
+        }
+        
+        .class-info {
+            flex-grow: 1;
+        }
+        
+        .class-actions {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo">约</div>
+            <div class="brand-text">
+                <div class="brand-title">约课系统中台</div>
+                <div class="brand-subtitle">接口测试平台</div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <div class="nav-item" :class="{active: activeCategory === 'basic'}" @click="activeCategory = 'basic'">
+                <i class="ri-building-line"></i> 基础数据
+            </div>
+            <div class="nav-item" :class="{active: activeCategory === 'course'}" @click="activeCategory = 'course'">
+                <i class="ri-book-open-line"></i> 课程管理
+            </div>
+            <div class="nav-item" :class="{active: activeCategory === 'reservation'}" @click="activeCategory = 'reservation'">
+                <i class="ri-calendar-check-line"></i> 预约管理
+            </div>
+            <div class="nav-item" :class="{active: activeCategory === 'operation'}" @click="activeCategory = 'operation'">
+                <i class="ri-hand-coin-line"></i> 核心操作
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h1>约课系统接口测试平台</h1>
+                <p>一站式测试所有核心接口 | 商业化中台风格</p>
+            </div>
+            <div class="topbar-actions">
+                <span class="badge">环境：{{baseUrl}}</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div v-if="loadError" class="notice">
+                <strong>依赖加载失败：</strong>{{loadError}}
+            </div>
+
+            <!-- 基础数据 -->
+            <div v-if="activeCategory === 'basic'">
+                <!-- 机构管理 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-building-2-line"></i>机构管理</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">机构名称</label>
+                            <input v-model="institutionForm.name" class="form-control" placeholder="请输入机构名称">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">联系电话</label>
+                            <input v-model="institutionForm.phone" class="form-control" placeholder="请输入联系电话">
+                        </div>
+                        <div class="form-group form-col-12">
+                            <label class="form-label">机构地址</label>
+                            <input v-model="institutionForm.address" class="form-control" placeholder="请输入机构地址">
+                        </div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;">
+                        <button class="btn btn-primary" @click="createInstitution"><i class="ri-add-line"></i>创建机构</button>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px;">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">机构ID</label>
+                            <input v-model="institutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="getInstitutionById"><i class="ri-search-line"></i>查询单个</button>
+                        <button class="btn btn-ghost" @click="getAllInstitutions"><i class="ri-list-check"></i>查询全部</button>
+                    </div>
+
+                    <div v-if="institutionList.length > 0" class="list" style="margin-top: 12px;">
+                        <div v-for="item in institutionList" class="list-item">
+                            <div class="list-header">
+                                <span>ID: {{item.institutionId}}</span>
+                                <span class="status-tag status-default">{{item.institutionName}}</span>
+                            </div>
+                            <div class="list-desc">地址: {{item.institutionAddress || '未填写'}} | 电话: {{item.contactPhone || '未填写'}}</div>
+                        </div>
+                    </div>
+                    <div v-else class="empty-state">
+                        <i class="ri-inbox-line"></i>暂无机构数据
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">机构ID</label>
+                            <input v-model="institutionForm.id" class="form-control" type="number" placeholder="请输入机构ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">新机构名称</label>
+                            <input v-model="institutionForm.updateName" class="form-control" placeholder="请输入新名称">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="updateInstitution"><i class="ri-edit-line"></i>更新机构</button>
+                        <button class="btn btn-ghost" @click="deleteInstitution"><i class="ri-delete-bin-line"></i>删除机构</button>
+                    </div>
+
+                    <div class="result-box">{{resultText}}</div>
+                </div>
+
+                <!-- 老师管理 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-user-3-line"></i>老师管理</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">老师姓名</label>
+                            <input v-model="teacherForm.teacherName" class="form-control" placeholder="请输入老师姓名">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">联系电话</label>
+                            <input v-model="teacherForm.phone" class="form-control" placeholder="请输入联系电话">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">授课科目</label>
+                            <input v-model="teacherForm.subject" class="form-control" placeholder="请输入授课科目">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">所属机构ID</label>
+                            <input v-model="teacherForm.institutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;">
+                        <button class="btn btn-primary" @click="createTeacher"><i class="ri-add-line"></i>创建老师</button>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px;">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">老师ID</label>
+                            <input v-model="teacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">机构ID</label>
+                            <input v-model="teacherInstitutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="getTeacherById"><i class="ri-search-line"></i>查询单个</button>
+                        <button class="btn btn-ghost" @click="getTeachersByInstitution"><i class="ri-building-line"></i>按机构查询</button>
+                        <button class="btn btn-ghost" @click="getAllTeachers"><i class="ri-list-check"></i>查询全部</button>
+                    </div>
+
+                    <div v-if="teacherList.length > 0" class="list" style="margin-top: 12px;">
+                        <div v-for="item in teacherList" class="list-item">
+                            <div class="list-header">
+                                <span>ID: {{item.teacherId}}</span>
+                                <span class="status-tag status-default">{{item.teacherName}}</span>
+                            </div>
+                            <div class="list-desc">科目: {{item.subject || '未填写'}} | 机构ID: {{item.institutionId}} | 姓名: {{item.teacherName}} | 电话: {{item.teacherPhone || '未填写'}}</div>
+                        </div>
+                    </div>
+                    <div v-else class="empty-state">
+                        <i class="ri-user-line"></i>暂无老师数据
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">老师ID</label>
+                            <input v-model="teacherForm.id" class="form-control" type="number" placeholder="请输入老师ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">新姓名</label>
+                            <input v-model="teacherForm.updateName" class="form-control" placeholder="请输入新姓名">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="updateTeacher"><i class="ri-edit-line"></i>更新老师</button>
+                        <button class="btn btn-ghost" @click="deleteTeacher"><i class="ri-delete-bin-line"></i>删除老师</button>
+                    </div>
+
+                    <div class="result-box">{{resultText}}</div>
+                </div>
+
+                <!-- 学生管理 -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-user-line"></i>学生管理</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生姓名</label>
+                            <input v-model="studentForm.name" class="form-control" placeholder="请输入学生姓名">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">联系电话</label>
+                            <input v-model="studentForm.phone" class="form-control" placeholder="请输入联系电话">
+                        </div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;">
+                        <button class="btn btn-primary" @click="createStudent"><i class="ri-add-line"></i>创建学生</button>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px;">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生ID</label>
+                            <input v-model="studentId" class="form-control" type="number" placeholder="请输入学生ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="getStudentById"><i class="ri-search-line"></i>查询单个</button>
+                        <button class="btn btn-ghost" @click="getAllStudents"><i class="ri-list-check"></i>查询全部</button>
+                    </div>
+
+                    <div v-if="studentList.length > 0" class="list" style="margin-top: 12px;">
+                        <div v-for="item in studentList" class="list-item">
+                            <div class="list-header">
+                                <span>ID: {{item.studentId}}</span>
+                                <span class="status-tag status-default">{{item.studentName}}</span>
+                            </div>
+                            <div class="list-desc">电话: {{item.phone || '未填写'}}</div>
+                        </div>
+                    </div>
+                    <div v-else class="empty-state">
+                        <i class="ri-user-smile-line"></i>暂无学生数据
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生ID</label>
+                            <input v-model="studentForm.id" class="form-control" type="number" placeholder="请输入学生ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">新姓名</label>
+                            <input v-model="studentForm.updateName" class="form-control" placeholder="请输入新姓名">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="updateStudent"><i class="ri-edit-line"></i>更新学生</button>
+                        <button class="btn btn-ghost" @click="deleteStudent"><i class="ri-delete-bin-line"></i>删除学生</button>
+                    </div>
+
+                    <div class="result-box">{{resultText}}</div>
+                </div>
+            </div>
+
+            <!-- 课程管理 -->
+            <div v-if="activeCategory === 'course'">
+                <!-- 子导航 -->
+                <div class="sub-nav">
+                    <div class="sub-nav-item" :class="{active: courseSubTab === 'template'}" @click="courseSubTab = 'template'">
+                        <i class="ri-book-line"></i> 课程模板
+                    </div>
+                    <div class="sub-nav-item" :class="{active: courseSubTab === 'class'}" @click="courseSubTab = 'class'">
+                        <i class="ri-calendar-line"></i> 课时管理
+                    </div>
+                </div>
+
+                <!-- 课程模板 -->
+                <div v-if="courseSubTab === 'template'">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="ri-book-line"></i>课程模板管理</div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">模板名称</label>
+                                <input v-model="templateForm.name" class="form-control" placeholder="请输入模板名称">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">授课科目</label>
+                                <input v-model="templateForm.subject" class="form-control" placeholder="请输入授课科目">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">授课老师ID</label>
+                                <input v-model="templateForm.teacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">课时时长（分钟）</label>
+                                <input v-model="templateForm.classDuration" class="form-control" type="number" placeholder="默认60">
+                            </div>
+                            <div class="form-group form-col-12">
+                                <label class="form-label">课程描述</label>
+                                <input v-model="templateForm.desc" class="form-control" placeholder="请输入课程描述">
+                            </div>
+                        </div>
+
+                        <div class="btn-row" style="margin-top: 10px;">
+                            <button class="btn btn-primary" @click="createTemplate"><i class="ri-add-line"></i>创建课程模板</button>
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">模板ID</label>
+                                <input v-model="templateId" class="form-control" type="number" placeholder="请输入模板ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">老师ID</label>
+                                <input v-model="templateTeacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="getTemplateById"><i class="ri-search-line"></i>查询单个</button>
+                            <button class="btn btn-ghost" @click="getTemplatesByTeacher"><i class="ri-user-3-line"></i>按老师查询</button>
+                            <button class="btn btn-ghost" @click="getAllTemplates"><i class="ri-list-check"></i>查询全部</button>
+                        </div>
+
+                        <div v-if="templateList.length > 0" class="list" style="margin-top: 12px;">
+                            <div v-for="item in templateList" class="list-item">
+                                <div class="list-header">
+                                    <span>ID: {{item.templateId}}</span>
+                                    <span class="status-tag status-default">{{item.templateName}}</span>
+                                </div>
+                                <div class="list-desc">科目: {{item.subject || '未填写'}} | 老师ID: {{item.teacherId}} | 时长: {{item.classDuration}}分钟</div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="ri-book-open-line"></i>暂无课程模板数据
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">模板ID</label>
+                                <input v-model="templateForm.id" class="form-control" type="number" placeholder="请输入模板ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">新模板名称</label>
+                                <input v-model="templateForm.updateName" class="form-control" placeholder="请输入新模板名称">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="updateTemplate"><i class="ri-edit-line"></i>更新模板</button>
+                            <button class="btn btn-ghost" @click="deleteTemplate"><i class="ri-delete-bin-line"></i>删除模板</button>
+                        </div>
+
+                        <div class="result-box">{{resultText}}</div>
+                    </div>
+                </div>
+
+                <!-- 课时管理 -->
+                <div v-if="courseSubTab === 'class'">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="ri-calendar-line"></i>课时管理</div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">模板ID</label>
+                                <input v-model="classForm.templateId" class="form-control" type="number" placeholder="请输入模板ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">上课日期</label>
+                                <input v-model="classForm.date" class="form-control" type="date">
+                            </div>
+                            <div class="form-group form-col-12">
+                                <label class="form-label">开始时间</label>
+                                <input v-model="classForm.time" class="form-control" type="time">
+                            </div>
+                        </div>
+
+                        <div class="btn-row" style="margin-top: 10px;">
+                            <button class="btn btn-primary" @click="createClass"><i class="ri-add-line"></i>创建课时</button>
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">课时ID</label>
+                                <input v-model="classId" class="form-control" type="number" placeholder="请输入课时ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">模板ID</label>
+                                <input v-model="classTemplateId" class="form-control" type="number" placeholder="请输入模板ID">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="getClassById"><i class="ri-search-line"></i>查询单个</button>
+                            <button class="btn btn-ghost" @click="getAvailableClasses"><i class="ri-check-double-line"></i>可预约课时</button>
+                            <button class="btn btn-ghost" @click="getAllClasses"><i class="ri-list-check"></i>查询全部</button>
+                        </div>
+
+                        <div v-if="classList.length > 0" class="list" style="margin-top: 12px;">
+                            <div v-for="item in classList" class="list-item">
+                                <div class="list-header">
+                                    <span>ID: {{item.classId}}</span>
+                                    <span :class="getStatusTagClass(item.status)">{{getStatusText(item.status)}}</span>
+                                </div>
+                                <div class="list-desc">模板ID: {{item.templateId}} | 开始时间: {{timestampToDateTime(item.classTimestampMs)}}</div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="ri-calendar-event-line"></i>暂无课时数据
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">课时ID</label>
+                                <input v-model="classForm.id" class="form-control" type="number" placeholder="请输入课时ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">状态</label>
+                                <select v-model="classForm.status">
+                                    <option value="1">可预约</option>
+                                    <option value="2">已抢占</option>
+                                    <option value="3">已取消</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="updateClassStatus"><i class="ri-refresh-line"></i>更新状态</button>
+                            <button class="btn btn-ghost" @click="deleteClass"><i class="ri-delete-bin-line"></i>删除课时</button>
+                        </div>
+
+                        <div class="result-box">{{resultText}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 预约管理 -->
+            <div v-if="activeCategory === 'reservation'">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-calendar-check-line"></i>预约记录管理</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生ID</label>
+                            <input v-model="reservationForm.studentId" class="form-control" type="number" placeholder="请输入学生ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">课时ID</label>
+                            <input v-model="reservationForm.classId" class="form-control" type="number" placeholder="请输入课时ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;">
+                        <button class="btn btn-primary" @click="createReservation"><i class="ri-add-line"></i>创建预约记录</button>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px;">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">预约ID</label>
+                            <input v-model="reservationId" class="form-control" type="number" placeholder="请输入预约ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生ID</label>
+                            <input v-model="reservationStudentId" class="form-control" type="number" placeholder="请输入学生ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="getReservationById"><i class="ri-search-line"></i>查询单个</button>
+                        <button class="btn btn-ghost" @click="getReservationsByStudent"><i class="ri-user-line"></i>按学生查询</button>
+                        <button class="btn btn-ghost" @click="getAllReservations"><i class="ri-list-check"></i>查询全部</button>
+                    </div>
+
+                    <div v-if="reservationList.length > 0" class="list" style="margin-top: 12px;">
+                        <div v-for="item in reservationList" class="list-item">
+                            <div class="list-header">
+                                <span>ID: {{item.reservationId}}</span>
+                                <span :class="getReservationTagClass(item.status)">{{getReservationStatusText(item.status)}}</span>
+                            </div>
+                            <div class="list-desc">学生ID: {{item.studentId}} | 课时ID: {{item.classId}} | 抢占时间: {{item.reservationTime || '未知'}}</div>
+                        </div>
+                    </div>
+                    <div v-else class="empty-state">
+                        <i class="ri-calendar-close-line"></i>暂无预约记录
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">预约ID</label>
+                            <input v-model="reservationForm.id" class="form-control" type="number" placeholder="请输入预约ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">状态</label>
+                            <select v-model="reservationForm.status">
+                                <option value="1">已预约</option>
+                                <option value="2">已取消</option>
+                                <option value="3">已完成</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button class="btn btn-primary" @click="updateReservationStatus"><i class="ri-refresh-line"></i>更新状态</button>
+                        <button class="btn btn-ghost" @click="deleteReservation"><i class="ri-delete-bin-line"></i>取消预约</button>
+                    </div>
+
+                    <div class="result-box">{{resultText}}</div>
+                </div>
+            </div>
+
+            <!-- 核心操作 -->
+            <div v-if="activeCategory === 'operation'">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-hand-coin-line"></i>课时抢占（核心功能）</div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group form-col-6">
+                            <label class="form-label">学生ID</label>
+                            <input v-model="reserveForm.studentId" class="form-control" type="number" placeholder="请输入学生ID">
+                        </div>
+                        <div class="form-group form-col-6">
+                            <label class="form-label">模板ID</label>
+                            <input v-model="reserveForm.templateId" class="form-control" type="number" placeholder="请输入模板ID">
+                        </div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;">
+                        <button class="btn btn-primary" @click="fetchAvailableClasses"><i class="ri-search-line"></i>获取可预约课时</button>
+                    </div>
+
+                    <div v-if="availableClassList.length > 0" class="class-select">
+                        <h3 style="margin-bottom: 10px;">请选择可预约课时</h3>
+                        <div v-for="(item, index) in availableClassList" 
+                             :key="item.classId" 
+                             :class="['class-item', {'selected': selectedClass && selectedClass.classId === item.classId}]"
+                             @click="selectClass(item)">
+                            <div class="class-info">
+                                <div><strong>课时ID:</strong> {{item.classId}}</div>
+                                <div><strong>日期:</strong> {{item.classDate}}</div>
+                                <div><strong>时间:</strong> {{item.startTime}}</div>
+                                <div><strong>模板ID:</strong> {{item.templateId}}</div>
+                            </div>
+                            <div class="class-actions">
+                                <button class="btn btn-primary" @click.stop="selectAndReserve(item)">选择并抢占</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="selectedClass" class="result-card" style="margin-top: 10px;">
+                        <div class="result-title">
+                            <i class="ri-check-line" style="color: var(--success);"></i>
+                            已选择课时
+                        </div>
+                        <div class="result-message">课时ID: {{selectedClass.classId}} | 日期: {{selectedClass.classDate}} | 时间: {{selectedClass.startTime}}</div>
+                    </div>
+
+                    <div class="btn-row" style="margin-top: 10px;" v-if="selectedClass">
+                        <button class="btn btn-success" @click="reserveClass"><i class="ri-rocket-line"></i>立即抢占选中课时</button>
+                    </div>
+
+                    <div v-if="reserveResult" :class="['result-card', reserveResult.success ? 'result-success' : 'result-error']">
+                        <div class="result-title">
+                            <i v-if="reserveResult.success" class="ri-check-circle-line" style="color: var(--success);"></i>
+                            <i v-else class="ri-close-circle-line" style="color: var(--danger);"></i>
+                            {{reserveResult.success ? '抢占成功' : '抢占失败'}}
+                        </div>
+                        <div class="result-message">{{reserveResult.message}}</div>
+                    </div>
+
+                    <div class="result-box">{{resultText}}</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ri-information-line"></i>操作指引</div>
+                    </div>
+                    <div class="info-box">
+                        <p>1. 先创建机构 → 老师 → 学生（基础数据）</p>
+                        <p>2. 创建课程模板（关联老师）→ 创建课时（关联模板，状态为可预约）</p>
+                        <p>3. 输入学生ID和模板ID，点击「获取可预约课时」</p>
+                        <p>4. 从列表中选择一个可预约的课时，点击「选择并抢占」或「立即抢占选中课时」</p>
+                        <p>5. 抢占成功后，课时状态变为「已抢占」，并生成预约记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof Vue === 'undefined') {
+            const app = document.getElementById('app');
+            app.innerHTML = '<div style="padding:16px;">Vue加载失败，请检查网络或CDN链接！</div>';
+            return;
+        }
+
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    activeCategory: 'basic',
+                    courseSubTab: 'template', // 课程管理下的子选项卡
+                    baseUrl: 'http://localhost:9090',
+                    resultText: '',
+                    reserveResult: null,
+                    loadError: '',
+
+                    institutionForm: { id: '', name: '', address: '', phone: '', updateName: '' },
+                    institutionId: '',
+                    institutionList: [],
+
+                    teacherForm: { id: '', teacherName: '', phone: '', subject: '', institutionId: '', updateName: '' },
+                    teacherId: '',
+                    teacherInstitutionId: '',
+                    teacherList: [],
+
+                    studentForm: { id: '', name: '', phone: '', updateName: '' },
+                    studentId: '',
+                    studentList: [],
+
+                    templateForm: { id: '', name: '', subject: '', teacherId: '', classDuration: 60, desc: '', updateName: '' },
+                    templateId: '',
+                    templateTeacherId: '',
+                    templateList: [],
+
+                    classForm: { id: '', templateId: '', classTimestampMs: '', status: 1 },
+                    classId: '',
+                    classTemplateId: '',
+                    classList: [],
+
+                    reservationForm: { id: '', studentId: '', classId: '', status: 1 },
+                    reservationId: '',
+                    reservationStudentId: '',
+                    reservationList: [],
+
+                    reserveForm: { studentId: '', templateId: '', classId: '' },
+                    availableClassList: [],
+                    selectedClass: null
+                }
+            },
+            methods: {
+                // 将日期和时间转换为时间戳
+                convertDateTimeToTimestamp(dateStr, timeStr) {
+                    if (!dateStr || !timeStr) {
+                        throw new Error('日期和时间不能为空');
+                    }
+                    // 组合日期和时间字符串
+                    const dateTimeStr = `${dateStr} ${timeStr}`;
+                    // 创建Date对象
+                    const dateObj = new Date(dateTimeStr);
+                    // 转换为毫秒级时间戳
+                    return dateObj.getTime();
+                },
+
+                timestampToDateTime(timestamp) {
+                    // 1. 校验时间戳有效性
+                    if (isNaN(timestamp) || timestamp < 0) {
+                        return "无效时间";
+                    }
+                    
+                    // 2. 转为Date对象（如果是秒级时间戳，需先 *1000）
+                    const date = new Date(timestamp);
+                    
+                    // 3. 补零函数（确保月份/日期/小时等是两位数）
+                    const padZero = (num) => num.toString().padStart(2, '0');
+                    
+                    // 4. 提取年月日时分秒
+                    const year = date.getFullYear();
+                    const month = padZero(date.getMonth() + 1); // 月份从0开始，需+1
+                    const day = padZero(date.getDate());
+                    const hour = padZero(date.getHours());
+                    const minute = padZero(date.getMinutes());
+                    const second = padZero(date.getSeconds());
+                    
+                    // 5. 拼接成目标格式
+                    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+                },               
+                
+                formatResult(res) { return JSON.stringify(res, null, 2); },
+
+                getStatusTagClass(status) {
+                    switch (status) {
+                        case 1: return 'status-tag status-success';
+                        case 2: return 'status-tag status-warning';
+                        case 3: return 'status-tag status-danger';
+                        default: return 'status-tag status-default';
+                    }
+                },
+                getStatusText(status) {
+                    switch (status) {
+                        case 1: return '可预约';
+                        case 2: return '已抢占';
+                        case 3: return '已取消';
+                        default: return '未知';
+                    }
+                },
+                getReservationTagClass(status) {
+                    switch (status) {
+                        case 1: return 'status-tag status-success';
+                        case 2: return 'status-tag status-danger';
+                        case 3: return 'status-tag status-default';
+                        default: return 'status-tag status-default';
+                    }
+                },
+                getReservationStatusText(status) {
+                    switch (status) {
+                        case 1: return '已预约';
+                        case 2: return '已取消';
+                        case 3: return '已完成';
+                        default: return '未知';
+                    }
+                },
+
+                timestampToChineseDateTime(timestamp) {
+                    if (isNaN(timestamp) || timestamp < 0) return "无效时间";
+                    
+                    const date = new Date(timestamp);
+                    const padZero = (num) => num.toString().padStart(2, '0');
+                    
+                    const year = date.getFullYear();
+                    const month = padZero(date.getMonth() + 1);
+                    const day = padZero(date.getDate());
+                    const hour = padZero(date.getHours());
+                    const minute = padZero(date.getMinutes());
+                    
+                    return `${year}年${month}月${day}日 ${hour}时${minute}分`;
+                },
+
+                // 获取可预约课时
+                async fetchAvailableClasses() {
+                    if (!this.reserveForm.templateId) {
+                        this.resultText = '请输入模板ID';
+                        return;
+                    }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-classes/available/${this.reserveForm.templateId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.availableClassList = res.data.data || [];
+                        this.selectedClass = null;
+                    } catch (e) {
+                        this.resultText = `请求失败：${e.message}`;
+                        this.availableClassList = [];
+                        this.selectedClass = null;
+                    }
+                },
+                
+                // 选择课时
+                selectClass(classItem) {
+                    this.selectedClass = classItem;
+                    this.reserveForm.classId = classItem.classId;
+                },
+                
+                // 选择并立即抢占
+                selectAndReserve(classItem) {
+                    this.selectClass(classItem);
+                    this.reserveClass();
+                },
+
+                // 机构
+                async createInstitution() {
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/institutions`, {
+                            institutionName: this.institutionForm.name,
+                            institutionAddress: this.institutionForm.address,
+                            contactPhone: this.institutionForm.phone
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllInstitutions();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getInstitutionById() {
+                    if (!this.institutionId) { this.resultText = '请输入机构ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/institutions/${this.institutionId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.institutionList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllInstitutions() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/institutions`);
+                        this.resultText = this.formatResult(res.data);
+                        this.institutionList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateInstitution() {
+                    if (!this.institutionForm.id) { this.resultText = '请输入机构ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/institutions/${this.institutionForm.id}`, {
+                            institutionName: this.institutionForm.updateName,
+                            institutionAddress: this.institutionForm.address,
+                            contactPhone: this.institutionForm.phone
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllInstitutions();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteInstitution() {
+                    if (!this.institutionForm.id) { this.resultText = '请输入机构ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/institutions/${this.institutionForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllInstitutions();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 老师
+                async createTeacher() {
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/teachers`, {
+                            teacherName: this.teacherForm.teacherName,
+                            teacherPhone: this.teacherForm.phone,
+                            subject: this.teacherForm.subject,
+                            institutionId: this.teacherForm.institutionId
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTeachers();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getTeacherById() {
+                    if (!this.teacherId) { this.resultText = '请输入老师ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/teachers/${this.teacherId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.teacherList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getTeachersByInstitution() {
+                    if (!this.teacherInstitutionId) { this.resultText = '请输入机构ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/teachers/institution/${this.teacherInstitutionId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.teacherList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllTeachers() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/teachers`);
+                        console.log("接口返回完整数据：", res);
+                        // 方式2：只打印响应体（实际业务数据）
+                        console.log("接口响应体数据：", res.data);
+                        this.resultText = this.formatResult(res.data);
+                        this.teacherList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateTeacher() {
+                    if (!this.teacherForm.id) { this.resultText = '请输入老师ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/teachers/${this.teacherForm.id}`, {
+                            teacherName: this.teacherForm.updateName,
+                            teacherPhone: this.teacherForm.phone,
+                            subject: this.teacherForm.subject,
+                            institutionId: this.teacherForm.institutionId
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTeachers();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteTeacher() {
+                    if (!this.teacherForm.id) { this.resultText = '请输入老师ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/teachers/${this.teacherForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTeachers();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 学生
+                async createStudent() {
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/students`, {
+                            studentName: this.studentForm.name,
+                            phone: this.studentForm.phone
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllStudents();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getStudentById() {
+                    if (!this.studentId) { this.resultText = '请输入学生ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/students/${this.studentId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.studentList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllStudents() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/students`);
+                        this.resultText = this.formatResult(res.data);
+                        this.studentList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateStudent() {
+                    if (!this.studentForm.id) { this.resultText = '请输入学生ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/students/${this.studentForm.id}`, {
+                            studentName: this.studentForm.updateName,
+                            phone: this.studentForm.phone
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllStudents();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteStudent() {
+                    if (!this.studentForm.id) { this.resultText = '请输入学生ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/students/${this.studentForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllStudents();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 模板
+                async createTemplate() {
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/course-templates`, {
+                            templateName: this.templateForm.name,
+                            subject: this.templateForm.subject,
+                            teacherId: this.templateForm.teacherId,
+                            classDuration: this.templateForm.classDuration,
+                            description: this.templateForm.desc
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTemplates();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getTemplateById() {
+                    if (!this.templateId) { this.resultText = '请输入模板ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-templates/${this.templateId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.templateList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getTemplatesByTeacher() {
+                    if (!this.templateTeacherId) { this.resultText = '请输入老师ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-templates/teacher/${this.templateTeacherId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.templateList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllTemplates() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-templates`);
+                        this.resultText = this.formatResult(res.data);
+                        this.templateList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateTemplate() {
+                    if (!this.templateForm.id) { this.resultText = '请输入模板ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/course-templates/${this.templateForm.id}`, {
+                            templateName: this.templateForm.updateName,
+                            subject: this.templateForm.subject,
+                            teacherId: this.templateForm.teacherId,
+                            classDuration: this.templateForm.classDuration,
+                            description: this.templateForm.desc
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTemplates();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteTemplate() {
+                    if (!this.templateForm.id) { this.resultText = '请输入模板ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/course-templates/${this.templateForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllTemplates();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 课时 - 修改此方法以将日期和时间转换为时间戳
+                async createClass() {
+                    try {
+                        // 将日期和时间转换为时间戳
+                        const classTimestampMs = this.convertDateTimeToTimestamp(this.classForm.date, this.classForm.time);
+                        
+                        const res = await axios.post(`${this.baseUrl}/course-classes`, {
+                            templateId: this.classForm.templateId,
+                            classTimestampMs: classTimestampMs,  // 发送时间戳而非日期时间
+                            status: 1
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        // this.getAllClasses();
+                    } catch (e) { 
+                        this.resultText = `请求失败：${e.message}`; 
+                    }
+                },
+                async getClassById() {
+                    if (!this.classId) { this.resultText = '请输入课时ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-classes/${this.classId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.classList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAvailableClasses() {
+                    if (!this.classTemplateId) { this.resultText = '请输入模板ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-classes/available/${this.classTemplateId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.classList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllClasses() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/course-classes`);
+                        this.resultText = this.formatResult(res.data);
+                        this.classList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateClassStatus() {
+                    if (!this.classForm.id) { this.resultText = '请输入课时ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/course-classes/${this.classForm.id}/status/${this.classForm.status}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllClasses();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteClass() {
+                    if (!this.classForm.id) { this.resultText = '请输入课时ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/course-classes/${this.classForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllClasses();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 预约
+                async createReservation() {
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/reservations`, {
+                            studentId: this.reservationForm.studentId,
+                            classId: this.reservationForm.classId,
+                            status: 1
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllReservations();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getReservationById() {
+                    if (!this.reservationId) { this.resultText = '请输入预约ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/reservations/${this.reservationId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.reservationList = res.data.data ? [res.data.data] : [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getReservationsByStudent() {
+                    if (!this.reservationStudentId) { this.resultText = '请输入学生ID'; return; }
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/reservations/student/${this.reservationStudentId}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.reservationList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async getAllReservations() {
+                    try {
+                        const res = await axios.get(`${this.baseUrl}/reservations`);
+                        this.resultText = this.formatResult(res.data);
+                        this.reservationList = res.data.data || [];
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async updateReservationStatus() {
+                    if (!this.reservationForm.id) { this.resultText = '请输入预约ID'; return; }
+                    try {
+                        const res = await axios.put(`${this.baseUrl}/reservations/${this.reservationForm.id}/status/${this.reservationForm.status}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllReservations();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+                async deleteReservation() {
+                    if (!this.reservationForm.id) { this.resultText = '请输入预约ID'; return; }
+                    try {
+                        const res = await axios.delete(`${this.baseUrl}/reservations/${this.reservationForm.id}`);
+                        this.resultText = this.formatResult(res.data);
+                        this.getAllReservations();
+                    } catch (e) { this.resultText = `请求失败：${e.message}`; }
+                },
+
+                // 抢占
+                async reserveClass() {
+                    if (!this.reserveForm.studentId || !this.reserveForm.classId) {
+                        this.resultText = '请输入学生ID和课时ID';
+                        return;
+                    }
+                    try {
+                        const res = await axios.post(`${this.baseUrl}/reserve/class`, {
+                            studentId: this.reserveForm.studentId,
+                            classId: this.reserveForm.classId
+                        });
+                        this.resultText = this.formatResult(res.data);
+                        this.reserveResult = res.data;
+                        this.getAllClasses();
+                        this.getAllReservations();
+                        
+                        // 清空选中课时
+                        this.selectedClass = null;
+                    } catch (e) {
+                        this.resultText = `请求失败：${e.message}`;
+                        this.reserveResult = { success: false, message: e.message };
+                    }
+                }
+            }
+        }).mount('#app');
+    });
+</script>
+</body>
+</html>

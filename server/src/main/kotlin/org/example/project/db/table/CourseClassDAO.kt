@@ -14,17 +14,14 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.kotlin.datetime.date
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
-import org.jetbrains.exposed.sql.kotlin.datetime.time
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 object CourseClasses : Table("course_class") {
     val classId = long("class_id").autoIncrement()
     val templateId = long("template_id")
-    val classDate = date("class_date")
-    val startTime = time("start_time")
+    val classTimestampMs = long("class_timestamp_ms")
     val status = integer("status")
     val createTime = datetime("create_time")
     val updateTime = datetime("update_time")
@@ -36,8 +33,7 @@ class CourseClassDAO {
     private fun resultRowToCourseClass(row: ResultRow) = CourseClass(
         classId = row[CourseClasses.classId],
         templateId = row[CourseClasses.templateId],
-        classDate = row[CourseClasses.classDate],
-        startTime = row[CourseClasses.startTime],
+        classTimestampMs = row[CourseClasses.classTimestampMs],
         status = row[CourseClasses.status],
         createTime = row[CourseClasses.createTime],
         updateTime = row[CourseClasses.updateTime]
@@ -46,8 +42,7 @@ class CourseClassDAO {
     suspend fun create(courseClass: CourseClass): Long = dbQuery {
         CourseClasses.insert {
             it[templateId] = courseClass.templateId
-            it[classDate] = courseClass.classDate
-            it[startTime] = courseClass.startTime
+            it[classTimestampMs] = courseClass.classTimestampMs
             it[status] = courseClass.status
         } get CourseClasses.classId
     }

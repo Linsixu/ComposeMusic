@@ -16,7 +16,7 @@ object StudentReservations : Table("student_reservation") {
     val reservationId = long("reservation_id").autoIncrement()
     val studentId = long("student_id")
     val classId = long("class_id")
-    val reservationTime = datetime("reservation_time")
+    val reservationTimestampMs = long("reservation_timestamp_ms")
     val status = integer("status")
     val createTime = datetime("create_time")
     val updateTime = datetime("update_time")
@@ -29,7 +29,7 @@ class StudentReservationDAO {
         reservationId = row[StudentReservations.reservationId],
         studentId = row[StudentReservations.studentId],
         classId = row[StudentReservations.classId],
-        reservationTime = row[StudentReservations.reservationTime],
+        reservationTimestampMs = row[StudentReservations.reservationTimestampMs],
         status = row[StudentReservations.status],
         createTime = row[StudentReservations.createTime],
         updateTime = row[StudentReservations.updateTime]

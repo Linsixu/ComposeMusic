@@ -392,7 +392,7 @@ class CourseReservationService(
                 val reservation = StudentReservation(
                     studentId = studentId,
                     classId = classId,
-                    reservationTime = LocalDateTime.now().toKotlinLocalDateTime(), // 抢占时间
+                    reservationTimestampMs = System.currentTimeMillis(), // 抢占时间
                     status = 1
                 )
                 reservationDAO.create(reservation)

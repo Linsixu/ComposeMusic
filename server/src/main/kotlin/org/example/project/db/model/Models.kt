@@ -32,6 +32,7 @@ data class EduInstitution(
 @Serializable
 data class Teacher(
     val teacherId: Long? = null,
+    @SerialName("teacherName")
     val teacherName: String,
     val teacherPhone: String? = null,
     val subject: String? = null,
@@ -73,10 +74,7 @@ data class CourseTemplate(
 data class CourseClass(
     val classId: Long? = null,
     val templateId: Long,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val classDate: LocalDate,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val startTime: LocalTime,
+    val classTimestampMs: Long,
     val status: Int = 1,
     @Serializable(with = LocalDateTimeIso8601Serializer::class)
     val createTime: LocalDateTime? = null,
@@ -90,8 +88,7 @@ data class StudentReservation(
     val reservationId: Long? = null,
     val studentId: Long,
     val classId: Long,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val reservationTime: LocalDateTime? = null,
+    val reservationTimestampMs: Long,
     val status: Int = 1,
     @Serializable(with = LocalDateTimeIso8601Serializer::class)
     val createTime: LocalDateTime? = null,
