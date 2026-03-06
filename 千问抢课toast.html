@@ -484,13 +484,13 @@
                 grid-column: span 1;
             }
         }
-        
+
         .class-select {
             margin-top: 14px;
             padding-top: 12px;
             border-top: 1px solid var(--border);
         }
-        
+
         .class-item {
             display: flex;
             justify-content: space-between;
@@ -502,21 +502,21 @@
             cursor: pointer;
             transition: var(--transition);
         }
-        
+
         .class-item:hover {
             background: #f9fafb;
             border-color: var(--primary);
         }
-        
+
         .class-item.selected {
             background: #eef2ff;
             border-color: var(--primary);
         }
-        
+
         .class-info {
             flex-grow: 1;
         }
-        
+
         .class-actions {
             display: flex;
             gap: 8px;
@@ -570,215 +570,220 @@
 
             <!-- 基础数据 -->
             <div v-if="activeCategory === 'basic'">
-                <!-- 机构管理 -->
+                <!-- 基础数据主卡片 -->
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title"><i class="ri-building-2-line"></i>机构管理</div>
+                        <div class="card-title"><i class="ri-building-2-line"></i>基础数据管理</div>
                     </div>
 
-                    <div class="form-grid">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">机构名称</label>
-                            <input v-model="institutionForm.name" class="form-control" placeholder="请输入机构名称">
+                    <!-- 基础数据子Tab导航 -->
+                    <div class="sub-nav">
+                        <div class="sub-nav-item" :class="{active: basicSubTab === 'institution'}" @click="basicSubTab = 'institution'">
+                            <i class="ri-building-line"></i> 机构管理
                         </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">联系电话</label>
-                            <input v-model="institutionForm.phone" class="form-control" placeholder="请输入联系电话">
+                        <div class="sub-nav-item" :class="{active: basicSubTab === 'teacher'}" @click="basicSubTab = 'teacher'">
+                            <i class="ri-user-3-line"></i> 老师管理
                         </div>
-                        <div class="form-group form-col-12">
-                            <label class="form-label">机构地址</label>
-                            <input v-model="institutionForm.address" class="form-control" placeholder="请输入机构地址">
+                        <div class="sub-nav-item" :class="{active: basicSubTab === 'student'}" @click="basicSubTab = 'student'">
+                            <i class="ri-user-line"></i> 学生管理
                         </div>
                     </div>
 
-                    <div class="btn-row" style="margin-top: 10px;">
-                        <button class="btn btn-primary" @click="createInstitution"><i class="ri-add-line"></i>创建机构</button>
-                    </div>
-
-                    <div class="form-grid" style="margin-top: 14px;">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">机构ID</label>
-                            <input v-model="institutionId" class="form-control" type="number" placeholder="请输入机构ID">
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="getInstitutionById"><i class="ri-search-line"></i>查询单个</button>
-                        <button class="btn btn-ghost" @click="getAllInstitutions"><i class="ri-list-check"></i>查询全部</button>
-                    </div>
-
-                    <div v-if="institutionList.length > 0" class="list" style="margin-top: 12px;">
-                        <div v-for="item in institutionList" class="list-item">
-                            <div class="list-header">
-                                <span>ID: {{item.institutionId}}</span>
-                                <span class="status-tag status-default">{{item.institutionName}}</span>
+                    <!-- 机构管理内容 -->
+                    <div v-show="basicSubTab === 'institution'">
+                        <div class="form-grid">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">机构名称</label>
+                                <input v-model="institutionForm.name" class="form-control" placeholder="请输入机构名称">
                             </div>
-                            <div class="list-desc">地址: {{item.institutionAddress || '未填写'}} | 电话: {{item.contactPhone || '未填写'}}</div>
-                        </div>
-                    </div>
-                    <div v-else class="empty-state">
-                        <i class="ri-inbox-line"></i>暂无机构数据
-                    </div>
-
-                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">机构ID</label>
-                            <input v-model="institutionForm.id" class="form-control" type="number" placeholder="请输入机构ID">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">新机构名称</label>
-                            <input v-model="institutionForm.updateName" class="form-control" placeholder="请输入新名称">
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="updateInstitution"><i class="ri-edit-line"></i>更新机构</button>
-                        <button class="btn btn-ghost" @click="deleteInstitution"><i class="ri-delete-bin-line"></i>删除机构</button>
-                    </div>
-
-                    <div class="result-box">{{resultText}}</div>
-                </div>
-
-                <!-- 老师管理 -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="ri-user-3-line"></i>老师管理</div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">老师姓名</label>
-                            <input v-model="teacherForm.teacherName" class="form-control" placeholder="请输入老师姓名">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">联系电话</label>
-                            <input v-model="teacherForm.phone" class="form-control" placeholder="请输入联系电话">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">授课科目</label>
-                            <input v-model="teacherForm.subject" class="form-control" placeholder="请输入授课科目">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">所属机构名字</label>
-                            <input v-model="teacherForm.institutionName" class="form-control" placeholder="请输入机构ID">
-                        </div>
-                    </div>
-
-                    <div class="btn-row" style="margin-top: 10px;">
-                        <button class="btn btn-primary" @click="createTeacher"><i class="ri-add-line"></i>创建老师</button>
-                    </div>
-
-                    <div class="form-grid" style="margin-top: 14px;">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">老师ID</label>
-                            <input v-model="teacherId" class="form-control" type="number" placeholder="请输入老师ID">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">机构ID</label>
-                            <input v-model="teacherInstitutionId" class="form-control" type="number" placeholder="请输入机构ID">
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="getTeacherById"><i class="ri-search-line"></i>查询单个</button>
-                        <button class="btn btn-ghost" @click="getTeachersByInstitution"><i class="ri-building-line"></i>按机构查询</button>
-                        <button class="btn btn-ghost" @click="getAllTeachers"><i class="ri-list-check"></i>查询全部</button>
-                    </div>
-
-                    <div v-if="teacherList.length > 0" class="list" style="margin-top: 12px;">
-                        <div v-for="item in teacherList" class="list-item">
-                            <div class="list-header">
-                                <span>ID: {{item.teacherId}}</span>
-                                <span class="status-tag status-default">{{item.teacherName}}</span>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">联系电话</label>
+                                <input v-model="institutionForm.phone" class="form-control" placeholder="请输入联系电话">
                             </div>
-                            <div class="list-desc">科目: {{item.subject || '未填写'}} | 机构ID: {{item.institutionId}} | 姓名: {{item.teacherName}} | 电话: {{item.teacherPhone || '未填写'}}</div>
-                        </div>
-                    </div>
-                    <div v-else class="empty-state">
-                        <i class="ri-user-line"></i>暂无老师数据
-                    </div>
-
-                    <!-- <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">老师ID</label>
-                            <input v-model="teacherForm.id" class="form-control" type="number" placeholder="请输入老师ID">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">新姓名</label>
-                            <input v-model="teacherForm.updateName" class="form-control" placeholder="请输入新姓名">
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="updateTeacher"><i class="ri-edit-line"></i>更新老师</button>
-                        <button class="btn btn-ghost" @click="deleteTeacher"><i class="ri-delete-bin-line"></i>删除老师</button>
-                    </div> -->
-
-                    <div class="result-box">{{resultText}}</div>
-                </div>
-
-                <!-- 学生管理 -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title"><i class="ri-user-line"></i>学生管理</div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">学生姓名</label>
-                            <input v-model="studentForm.name" class="form-control" placeholder="请输入学生姓名">
-                        </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">联系电话</label>
-                            <input v-model="studentForm.phone" class="form-control" placeholder="请输入联系电话">
-                        </div>
-                    </div>
-
-                    <div class="btn-row" style="margin-top: 10px;">
-                        <button class="btn btn-primary" @click="createStudent"><i class="ri-add-line"></i>创建学生</button>
-                    </div>
-
-                    <div class="form-grid" style="margin-top: 14px;">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">学生ID</label>
-                            <input v-model="studentId" class="form-control" type="number" placeholder="请输入学生ID">
-                        </div>
-                    </div>
-
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="getStudentById"><i class="ri-search-line"></i>查询单个</button>
-                        <button class="btn btn-ghost" @click="getAllStudents"><i class="ri-list-check"></i>查询全部</button>
-                    </div>
-
-                    <div v-if="studentList.length > 0" class="list" style="margin-top: 12px;">
-                        <div v-for="item in studentList" class="list-item">
-                            <div class="list-header">
-                                <span>ID: {{item.studentId}}</span>
-                                <span class="status-tag status-default">{{item.studentName}}</span>
+                            <div class="form-group form-col-12">
+                                <label class="form-label">机构地址</label>
+                                <input v-model="institutionForm.address" class="form-control" placeholder="请输入机构地址">
                             </div>
-                            <div class="list-desc">电话: {{item.phone || '未填写'}}</div>
+                        </div>
+
+                        <div class="btn-row" style="margin-top: 10px;">
+                            <button class="btn btn-primary" @click="createInstitution"><i class="ri-add-line"></i>创建机构</button>
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">机构ID</label>
+                                <input v-model="institutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="getInstitutionById"><i class="ri-search-line"></i>查询单个</button>
+                            <button class="btn btn-ghost" @click="getAllInstitutions"><i class="ri-list-check"></i>查询全部</button>
+                        </div>
+
+                        <div v-if="institutionList.length > 0" class="list" style="margin-top: 12px;">
+                            <div v-for="item in institutionList" class="list-item">
+                                <div class="list-header">
+                                    <span>ID: {{item.institutionId}}</span>
+                                    <span class="status-tag status-default">{{item.institutionName}}</span>
+                                </div>
+                                <div class="list-desc">地址: {{item.institutionAddress || '未填写'}} | 电话: {{item.contactPhone || '未填写'}}</div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="ri-inbox-line"></i>暂无机构数据
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">机构ID</label>
+                                <input v-model="institutionForm.id" class="form-control" type="number" placeholder="请输入机构ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">新机构名称</label>
+                                <input v-model="institutionForm.updateName" class="form-control" placeholder="请输入新名称">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="updateInstitution"><i class="ri-edit-line"></i>更新机构</button>
+                            <button class="btn btn-ghost" @click="deleteInstitution"><i class="ri-delete-bin-line"></i>删除机构</button>
                         </div>
                     </div>
-                    <div v-else class="empty-state">
-                        <i class="ri-user-smile-line"></i>暂无学生数据
-                    </div>
 
-                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
-                        <div class="form-group form-col-6">
-                            <label class="form-label">学生ID</label>
-                            <input v-model="studentForm.id" class="form-control" type="number" placeholder="请输入学生ID">
+                    <!-- 老师管理内容 -->
+                    <div v-show="basicSubTab === 'teacher'">
+                        <div class="form-grid">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">老师姓名</label>
+                                <input v-model="teacherForm.teacherName" class="form-control" placeholder="请输入老师姓名">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">联系电话</label>
+                                <input v-model="teacherForm.phone" class="form-control" placeholder="请输入联系电话">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">授课科目</label>
+                                <input v-model="teacherForm.subject" class="form-control" placeholder="请输入授课科目">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">所属机构名字</label>
+                                <input v-model="teacherForm.institutionName" class="form-control" placeholder="请输入机构ID">
+                            </div>
                         </div>
-                        <div class="form-group form-col-6">
-                            <label class="form-label">新姓名</label>
-                            <input v-model="studentForm.updateName" class="form-control" placeholder="请输入新姓名">
+
+                        <div class="btn-row" style="margin-top: 10px;">
+                            <button class="btn btn-primary" @click="createTeacher"><i class="ri-add-line"></i>创建老师</button>
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">老师ID</label>
+                                <input v-model="teacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">机构ID</label>
+                                <input v-model="teacherInstitutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="getTeacherById"><i class="ri-search-line"></i>查询单个</button>
+                            <button class="btn btn-ghost" @click="getTeachersByInstitution"><i class="ri-building-line"></i>按机构查询</button>
+                            <button class="btn btn-ghost" @click="getAllTeachers"><i class="ri-list-check"></i>查询全部</button>
+                        </div>
+
+                        <div v-if="teacherList.length > 0" class="list" style="margin-top: 12px;">
+                            <div v-for="item in teacherList" class="list-item">
+                                <div class="list-header">
+                                    <span>ID: {{item.teacherId}}</span>
+                                    <span class="status-tag status-default">{{item.teacherName}}</span>
+                                </div>
+                                <div class="list-desc">科目: {{item.subject || '未填写'}} | 机构ID: {{item.institutionId}} | 姓名: {{item.teacherName}} | 电话: {{item.teacherPhone || '未填写'}}</div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="ri-user-line"></i>暂无老师数据
+                        </div>
+
+                        <!-- <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">老师ID</label>
+                                <input v-model="teacherForm.id" class="form-control" type="number" placeholder="请输入老师ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">新姓名</label>
+                                <input v-model="teacherForm.updateName" class="form-control" placeholder="请输入新姓名">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="updateTeacher"><i class="ri-edit-line"></i>更新老师</button>
+                            <button class="btn btn-ghost" @click="deleteTeacher"><i class="ri-delete-bin-line"></i>删除老师</button>
+                        </div> -->
+                    </div>
+
+                    <!-- 学生管理内容 -->
+                    <div v-show="basicSubTab === 'student'">
+                        <div class="form-grid">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">学生姓名</label>
+                                <input v-model="studentForm.name" class="form-control" placeholder="请输入学生姓名">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">联系电话</label>
+                                <input v-model="studentForm.phone" class="form-control" placeholder="请输入联系电话">
+                            </div>
+                        </div>
+
+                        <div class="btn-row" style="margin-top: 10px;">
+                            <button class="btn btn-primary" @click="createStudent"><i class="ri-add-line"></i>创建学生</button>
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">学生ID</label>
+                                <input v-model="studentId" class="form-control" type="number" placeholder="请输入学生ID">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="getStudentById"><i class="ri-search-line"></i>查询单个</button>
+                            <button class="btn btn-ghost" @click="getAllStudents"><i class="ri-list-check"></i>查询全部</button>
+                        </div>
+
+                        <div v-if="studentList.length > 0" class="list" style="margin-top: 12px;">
+                            <div v-for="item in studentList" class="list-item">
+                                <div class="list-header">
+                                    <span>ID: {{item.studentId}}</span>
+                                    <span class="status-tag status-default">{{item.studentName}}</span>
+                                </div>
+                                <div class="list-desc">电话: {{item.phone || '未填写'}}</div>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state">
+                            <i class="ri-user-smile-line"></i>暂无学生数据
+                        </div>
+
+                        <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                            <div class="form-group form-col-6">
+                                <label class="form-label">学生ID</label>
+                                <input v-model="studentForm.id" class="form-control" type="number" placeholder="请输入学生ID">
+                            </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">新姓名</label>
+                                <input v-model="studentForm.updateName" class="form-control" placeholder="请输入新姓名">
+                            </div>
+                        </div>
+
+                        <div class="btn-row">
+                            <button class="btn btn-primary" @click="updateStudent"><i class="ri-edit-line"></i>更新学生</button>
+                            <button class="btn btn-ghost" @click="deleteStudent"><i class="ri-delete-bin-line"></i>删除学生</button>
                         </div>
                     </div>
 
-                    <div class="btn-row">
-                        <button class="btn btn-primary" @click="updateStudent"><i class="ri-edit-line"></i>更新学生</button>
-                        <button class="btn btn-ghost" @click="deleteStudent"><i class="ri-delete-bin-line"></i>删除学生</button>
-                    </div>
-
+                    <!-- 通用结果框 -->
                     <div class="result-box">{{resultText}}</div>
                 </div>
             </div>
@@ -1131,6 +1136,7 @@
             data() {
                 return {
                     activeCategory: 'basic',
+                    basicSubTab: 'institution', // 新增：基础数据子Tab状态
                     courseSubTab: 'template', // 课程管理下的子选项卡
                     baseUrl: 'http://localhost:9090',
                     resultText: '',
@@ -1508,7 +1514,7 @@
                     try {
                         // 将日期和时间转换为时间戳
                         const classTimestampMs = this.convertDateTimeToTimestamp(this.classForm.date, this.classForm.time);
-                        
+
                         const res = await axios.post(`${this.baseUrl}/course-classes`, {
                             templateId: this.classForm.templateId,
                             classTimestampMs: classTimestampMs,  // 发送时间戳而非日期时间
@@ -1516,8 +1522,8 @@
                         });
                         this.resultText = this.formatResult(res.data);
                         // this.getAllClasses();
-                    } catch (e) { 
-                        this.resultText = `请求失败：${e.message}`; 
+                    } catch (e) {
+                        this.resultText = `请求失败：${e.message}`;
                     }
                 },
                 async getClassById() {
@@ -1627,7 +1633,7 @@
                         this.reserveResult = res.data;
                         this.getAllClasses();
                         this.getAllReservations();
-                        
+
                         // 清空选中课时
                         this.selectedClass = null;
                     } catch (e) {
