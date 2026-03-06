@@ -9,14 +9,12 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import java.sql.Timestamp
 
-object EduInstitutions : Table("edu_institution") {
-    val institutionId = long("institution_id").autoIncrement()
-    val institutionName = varchar("institution_name", 100)
-    val institutionAddress = varchar("institution_address", 255).nullable()
+object EduInstitutions : Table("institutions") {
+    val institutionId = long("id").autoIncrement()
+    val institutionName = varchar("name", 100)
+    val institutionAddress = varchar("address", 255).nullable()
     val contactPhone = varchar("contact_phone", 20).nullable()
     val createTime = datetime("create_time")
-    val updateTime = datetime("update_time")
-
     override val primaryKey = PrimaryKey(institutionId)
 }
 
@@ -28,7 +26,6 @@ class EduInstitutionDAO {
         institutionAddress = row[EduInstitutions.institutionAddress],
         contactPhone = row[EduInstitutions.contactPhone],
         createTime = row[EduInstitutions.createTime],
-        updateTime = row[EduInstitutions.updateTime]
     )
 
     // 新增机构
