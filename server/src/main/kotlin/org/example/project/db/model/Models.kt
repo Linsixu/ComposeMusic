@@ -6,11 +6,13 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.serializers.LocalDateTimeIso8601Serializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.example.project.SqlCode.success_code
 
 // 基础响应模型
 @Serializable
 data class ApiResponse<T>(
     val success: Boolean,
+    val code: Int = success_code,
     val data: T? = null,
     val message: String? = null
 )

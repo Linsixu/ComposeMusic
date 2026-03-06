@@ -9,14 +9,12 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
-object Teachers : Table("teacher") {
-    val teacherId = long("teacher_id").autoIncrement()
-    val teacherName = varchar("teacher_name", 50)
-    val teacherPhone = varchar("teacher_phone", 20).nullable()
-    val subject = varchar("subject", 50).nullable()
+object Teachers : Table("teachers") {
+    val teacherId = long("id").autoIncrement()
     val institutionId = long("institution_id")
-    val createTime = datetime("create_time")
-    val updateTime = datetime("update_time")
+    val teacherName = varchar("name", 50)
+    val teacherPhone = varchar("phone", 20).nullable()
+    val subject = varchar("subject", 50).nullable()
 
     override val primaryKey = PrimaryKey(teacherId)
 }
@@ -27,9 +25,7 @@ class TeacherDAO {
         teacherName = row[Teachers.teacherName],
         teacherPhone = row[Teachers.teacherPhone],
         subject = row[Teachers.subject],
-        institutionId = row[Teachers.institutionId],
-        createTime = row[Teachers.createTime],
-        updateTime = row[Teachers.updateTime]
+        institutionId = row[Teachers.institutionId]
     )
 
     suspend fun create(teacher: Teacher): Long = dbQuery {

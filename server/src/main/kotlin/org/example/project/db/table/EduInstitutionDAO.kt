@@ -3,6 +3,7 @@ package org.example.project.db.table
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.EduInstitution
 import org.example.project.db.table.EduInstitutions.institutionId
+import org.example.project.db.table.EduInstitutions.institutionName
 
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -14,7 +15,7 @@ object EduInstitutions : Table("institutions") {
     val institutionName = varchar("name", 100)
     val institutionAddress = varchar("address", 255).nullable()
     val contactPhone = varchar("contact_phone", 20).nullable()
-    val createTime = datetime("create_time")
+    val createTime = datetime("created_at")
     override val primaryKey = PrimaryKey(institutionId)
 }
 
@@ -55,6 +56,18 @@ class EduInstitutionDAO {
     suspend fun findById(id: Long): EduInstitution? = dbQuery {
         EduInstitutions.selectAll().where { institutionId eq id }
             .singleOrNull()?.let { resultRowToInstitution(it) }
+    }
+
+    suspend fun findByName(name: String): EduInstitution? = dbQuery {
+        EduInstitutions.selectAll().where { institutionName eq name }
+            .map {
+                println("magic EduInstitutions item=${it}")
+                it
+            }
+            .firstOrNull()?.let {
+                println("magic EduInstitutions finally item=${it}")
+                resultRowToInstitution(it)
+            }
     }
 
     // 查询所有

@@ -6,7 +6,8 @@ package org.example.project.db.manager
  * 用途：核心服务
  */
 
-import kotlinx.datetime.toKotlinLocalDateTime
+import org.example.project.SqlCode.error_other
+import org.example.project.SqlCode.institution_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.ApiResponse
 import org.example.project.db.model.CourseClass
@@ -21,8 +22,8 @@ import org.example.project.db.table.EduInstitutionDAO
 import org.example.project.db.table.StudentDAO
 import org.example.project.db.table.StudentReservationDAO
 import org.example.project.db.table.TeacherDAO
+import org.example.project.request.TeacherRequest
 import org.jetbrains.exposed.exceptions.ExposedSQLException
-import java.time.LocalDateTime
 
 class CourseReservationService(
     private val institutionDAO: EduInstitutionDAO = EduInstitutionDAO(),
@@ -38,9 +39,9 @@ class CourseReservationService(
             val id = institutionDAO.create(institution)
             ApiResponse(success = true, data = id, message = "机构创建成功")
         } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, message = "机构名称已存在：${e.message}")
+            ApiResponse(success = false, code = institution_has_exit, message = "机构名称已存在：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "创建失败：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "创建失败：${e.message}")
         }
     }
 
@@ -83,14 +84,20 @@ class CourseReservationService(
     }
 
     // ========== 老师服务 ==========
-    suspend fun createTeacher(teacher: Teacher): ApiResponse<Long> {
+    suspend fun createTeacher(teacherReq: TeacherRequest): ApiResponse<Long> {
         return try {
-            val id = teacherDAO.create(teacher)
-            ApiResponse(success = true, data = id, message = "老师创建成功")
-        } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, message = "手机号已存在：${e.message}")
-        } catch (e: Exception) {
-            ApiResponse(success = false, message = "创建失败：${e.message}")
+            dbQuery {
+                val institution = institutionDAO.findByName(teacherReq.institutionName)
+                    ?: throw IllegalArgumentException("当前机构不存在")
+                println("magic create teacher id=$institution")
+                val teacher = Teacher(teacherName = teacherReq.teacherName, teacherPhone = teacherReq.teacherPhone,
+                    subject = teacherReq.subject, institutionId = institution.institutionId!!)
+                val id = teacherDAO.create(teacher)
+                println("magic create teacher id=$id")
+                ApiResponse(success = true, data = id, message = "老师创建成功")
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, message = "${e.message}")
         }
     }
 

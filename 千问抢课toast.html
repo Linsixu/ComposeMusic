@@ -659,8 +659,8 @@
                             <input v-model="teacherForm.subject" class="form-control" placeholder="请输入授课科目">
                         </div>
                         <div class="form-group form-col-6">
-                            <label class="form-label">所属机构ID</label>
-                            <input v-model="teacherForm.institutionId" class="form-control" type="number" placeholder="请输入机构ID">
+                            <label class="form-label">所属机构名字</label>
+                            <input v-model="teacherForm.institutionName" class="form-control" placeholder="请输入机构ID">
                         </div>
                     </div>
 
@@ -698,7 +698,7 @@
                         <i class="ri-user-line"></i>暂无老师数据
                     </div>
 
-                    <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+                    <!-- <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
                         <div class="form-group form-col-6">
                             <label class="form-label">老师ID</label>
                             <input v-model="teacherForm.id" class="form-control" type="number" placeholder="请输入老师ID">
@@ -712,7 +712,7 @@
                     <div class="btn-row">
                         <button class="btn btn-primary" @click="updateTeacher"><i class="ri-edit-line"></i>更新老师</button>
                         <button class="btn btn-ghost" @click="deleteTeacher"><i class="ri-delete-bin-line"></i>删除老师</button>
-                    </div>
+                    </div> -->
 
                     <div class="result-box">{{resultText}}</div>
                 </div>
@@ -1060,8 +1060,8 @@
 
                     <div v-if="availableClassList.length > 0" class="class-select">
                         <h3 style="margin-bottom: 10px;">请选择可预约课时</h3>
-                        <div v-for="(item, index) in availableClassList" 
-                             :key="item.classId" 
+                        <div v-for="(item, index) in availableClassList"
+                             :key="item.classId"
                              :class="['class-item', {'selected': selectedClass && selectedClass.classId === item.classId}]"
                              @click="selectClass(item)">
                             <div class="class-info">
@@ -1075,7 +1075,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div v-if="selectedClass" class="result-card" style="margin-top: 10px;">
                         <div class="result-title">
                             <i class="ri-check-line" style="color: var(--success);"></i>
@@ -1141,7 +1141,7 @@
                     institutionId: '',
                     institutionList: [],
 
-                    teacherForm: { id: '', teacherName: '', phone: '', subject: '', institutionId: '', updateName: '' },
+                    teacherForm: { id: '', teacherName: '', phone: '', subject: '', institutionName: '', updateName: '' },
                     teacherId: '',
                     teacherInstitutionId: '',
                     teacherList: [],
@@ -1189,13 +1189,13 @@
                     if (isNaN(timestamp) || timestamp < 0) {
                         return "无效时间";
                     }
-                    
+
                     // 2. 转为Date对象（如果是秒级时间戳，需先 *1000）
                     const date = new Date(timestamp);
-                    
+
                     // 3. 补零函数（确保月份/日期/小时等是两位数）
                     const padZero = (num) => num.toString().padStart(2, '0');
-                    
+
                     // 4. 提取年月日时分秒
                     const year = date.getFullYear();
                     const month = padZero(date.getMonth() + 1); // 月份从0开始，需+1
@@ -1203,11 +1203,11 @@
                     const hour = padZero(date.getHours());
                     const minute = padZero(date.getMinutes());
                     const second = padZero(date.getSeconds());
-                    
+
                     // 5. 拼接成目标格式
                     return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-                },               
-                
+                },
+
                 formatResult(res) { return JSON.stringify(res, null, 2); },
 
                 getStatusTagClass(status) {
@@ -1245,16 +1245,16 @@
 
                 timestampToChineseDateTime(timestamp) {
                     if (isNaN(timestamp) || timestamp < 0) return "无效时间";
-                    
+
                     const date = new Date(timestamp);
                     const padZero = (num) => num.toString().padStart(2, '0');
-                    
+
                     const year = date.getFullYear();
                     const month = padZero(date.getMonth() + 1);
                     const day = padZero(date.getDate());
                     const hour = padZero(date.getHours());
                     const minute = padZero(date.getMinutes());
-                    
+
                     return `${year}年${month}月${day}日 ${hour}时${minute}分`;
                 },
 
@@ -1275,13 +1275,13 @@
                         this.selectedClass = null;
                     }
                 },
-                
+
                 // 选择课时
                 selectClass(classItem) {
                     this.selectedClass = classItem;
                     this.reserveForm.classId = classItem.classId;
                 },
-                
+
                 // 选择并立即抢占
                 selectAndReserve(classItem) {
                     this.selectClass(classItem);
@@ -1297,7 +1297,7 @@
                             contactPhone: this.institutionForm.phone
                         });
                         this.resultText = this.formatResult(res.data);
-                        this.getAllInstitutions();
+                        // this.getAllInstitutions();
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getInstitutionById() {
@@ -1343,10 +1343,10 @@
                             teacherName: this.teacherForm.teacherName,
                             teacherPhone: this.teacherForm.phone,
                             subject: this.teacherForm.subject,
-                            institutionId: this.teacherForm.institutionId
+                            institutionName: this.teacherForm.institutionName
                         });
                         this.resultText = this.formatResult(res.data);
-                        this.getAllTeachers();
+                        // this.getAllTeachers();
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getTeacherById() {
@@ -1382,7 +1382,7 @@
                             teacherName: this.teacherForm.updateName,
                             teacherPhone: this.teacherForm.phone,
                             subject: this.teacherForm.subject,
-                            institutionId: this.teacherForm.institutionId
+                            institutionName: this.teacherForm.institutionName
                         });
                         this.resultText = this.formatResult(res.data);
                         this.getAllTeachers();
