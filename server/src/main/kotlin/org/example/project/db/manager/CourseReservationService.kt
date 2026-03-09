@@ -8,6 +8,8 @@ package org.example.project.db.manager
 
 import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
+import org.example.project.SqlCode.institution_not_exit
+import org.example.project.SqlCode.student_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.ApiResponse
 import org.example.project.db.model.CourseClass
@@ -22,8 +24,10 @@ import org.example.project.db.table.EduInstitutionDAO
 import org.example.project.db.table.StudentDAO
 import org.example.project.db.table.StudentReservationDAO
 import org.example.project.db.table.TeacherDAO
+import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import java.sql.SQLIntegrityConstraintViolationException
 
 class CourseReservationService(
     private val institutionDAO: EduInstitutionDAO = EduInstitutionDAO(),
@@ -97,7 +101,7 @@ class CourseReservationService(
                 ApiResponse(success = true, data = id, message = "老师创建成功")
             }
         } catch (e: IllegalArgumentException) {
-            ApiResponse(success = false, message = "${e.message}")
+            ApiResponse(success = false, code = institution_not_exit, message = "${e.message}")
         }
     }
 
@@ -149,14 +153,27 @@ class CourseReservationService(
     }
 
     // ========== 学生服务 ==========
-    suspend fun createStudent(student: Student): ApiResponse<Long> {
+    suspend fun createStudent(student: CreateStudentReq): ApiResponse<Long> {
         return try {
-            val id = studentDAO.create(student)
-            ApiResponse(success = true, data = id, message = "学生创建成功")
+            dbQuery {
+                val institution = institutionDAO.findByName(student.institutionName)
+                    ?: throw IllegalArgumentException("当前机构不存在")
+                println("magic create student id=$institution")
+                val student = Student(studentName = student.studentName, phone = student.phone, institutionId = institution.institutionId!!)
+                val id = studentDAO.create(student)
+                println("magic create student id=$id")
+                ApiResponse(success = true, data = id, message = "学生创建成功")
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= institution_not_exit, message = "${e.message}")
+        } catch (e: SQLIntegrityConstraintViolationException){
+            ApiResponse(success = false, code= student_has_exit, message = "该学生已在对应机构添加，请勿重新添加")
         } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, message = "手机号已存在：${e.message}")
+            // 数据库异常（如唯一键冲突）
+            ApiResponse(success = false, code = student_has_exit, message = "数据库异常：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "创建失败：${e.message}")
+            // 其他异常
+            ApiResponse(success = false, code = error_other, message = "抢占失败：${e.message}")
         }
     }
 

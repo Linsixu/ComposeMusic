@@ -8,11 +8,11 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
-object Students : Table("student") {
-    val studentId = long("student_id").autoIncrement()
-    val studentName = varchar("student_name", 50)
+object Students : Table("students") {
+    val studentId = long("id").autoIncrement()
+    val institutionId = long("institution_id")
+    val studentName = varchar("name", 50)
     val phone = varchar("phone", 20)
-    val createTime = datetime("create_time")
 
     override val primaryKey = PrimaryKey(studentId)
 }
@@ -22,13 +22,14 @@ class StudentDAO {
         studentId = row[Students.studentId],
         studentName = row[Students.studentName],
         phone = row[Students.phone],
-        createTime = row[Students.createTime]
+        institutionId = row[Students.institutionId]
     )
 
     suspend fun create(student: Student): Long = dbQuery {
         Students.insert {
             it[studentName] = student.studentName
             it[phone] = student.phone
+            it[institutionId] = student.institutionId!!
         } get Students.studentId
     }
 

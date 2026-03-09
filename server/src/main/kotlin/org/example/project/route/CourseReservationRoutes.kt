@@ -18,6 +18,7 @@ import org.example.project.db.model.Teacher
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 
 // 封装所有路由，依赖注入服务层
@@ -111,8 +112,11 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
     route("/students") {
         // 3.1 创建学生（POST /students）
         post {
-            val student = call.receive<Student>()
-            val response = service.createStudent(student)
+//            val student = call.receive<Student>()
+//            val response = service.createStudent(student)
+//            call.respond(response)
+            val studentReq = call.receive<CreateStudentReq>()
+            val response = service.createStudent(studentReq)
             call.respond(response)
         }
 

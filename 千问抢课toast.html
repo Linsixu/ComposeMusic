@@ -735,6 +735,10 @@
                                 <label class="form-label">联系电话</label>
                                 <input v-model="studentForm.phone" class="form-control" placeholder="请输入联系电话">
                             </div>
+                            <div class="form-group form-col-6">
+                                <label class="form-label">所属机构名称</label>
+                                <input v-model="studentForm.institutionName" class="form-control" placeholder="请输入机构名称">
+                            </div>
                         </div>
 
                         <div class="btn-row" style="margin-top: 10px;">
@@ -1152,7 +1156,7 @@
                     teacherInstitutionId: '',
                     teacherList: [],
 
-                    studentForm: { id: '', name: '', phone: '', updateName: '' },
+                    studentForm: { id: '', name: '', phone: '', institutionName: '', updateName: '' },
                     studentId: '',
                     studentList: [],
 
@@ -1408,10 +1412,11 @@
                     try {
                         const res = await axios.post(`${this.baseUrl}/students`, {
                             studentName: this.studentForm.name,
-                            phone: this.studentForm.phone
+                            phone: this.studentForm.phone,
+                            institutionName: this.studentForm.institutionName
                         });
                         this.resultText = this.formatResult(res.data);
-                        this.getAllStudents();
+                        // this.getAllStudents();
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getStudentById() {

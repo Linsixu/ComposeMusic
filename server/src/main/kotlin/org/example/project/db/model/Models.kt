@@ -51,8 +51,7 @@ data class Student(
     val studentId: Long? = null,
     val studentName: String,
     val phone: String,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val createTime: LocalDateTime? = null
+    val institutionId: Long? = null
 )
 
 // 课程模板模型
