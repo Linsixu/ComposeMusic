@@ -1457,24 +1457,33 @@
                     return;
                     }
 
+                    const classTimestampMs = this.convertDateTimeToTimestamp(classDate, startTime); 
                     // 4. 构造请求数据（确保字段正确）
                     const requestData = {
                     templateId: this.currentTemplate.templateId,
-                    teacherName: encodeURIComponent(this.currentTemplate.teacherName || ''),
-                    classDate: classDate, // 传递用户选择的日期
-                    startTime: startTime, // 传递用户选择的时间
+                    teacherName: this.currentTemplate.teacherName,
+                    startMillisecondTime: classTimestampMs, // 传递用户选择的日期
+                    duration: this.currentTemplate.classDuration, // 传递用户选择的时间
                     status: 1 // 默认可预约
                     };
+                    console.log("请求数据：", requestData);
 
+                    // 方式2：打印单个字段（精准查看某值）
+                    console.log("模板ID：", requestData.templateId);
+                    console.log("老师姓名：", requestData.teacherName);
+                    console.log("开始时间戳：", requestData.startMillisecondTime);
+                    console.log("课时时长：", requestData.duration);
                     // 5. 发送请求
-                    const res = await axios.post(`${this.baseUrl}/course-classes`, requestData, {
-                    headers: {
-                        'Content-Type': 'application/json;charset=UTF-8'
+                    const res = await axios.post(`${this.baseUrl}/course-classes`, requestData);
+                    console.log("res:", res);
+                    console.log("res.data:", res.data);
+                    if (res.data.code == 200) {
+                        alert('课时创建成功！');
+                    } else {
+                        alert(res.data.message);
                     }
-                    });
-
                     // 6. 成功处理
-                    alert('课时创建成功！');
+
                     this.closeCreateClassModal();
                     // 可选：刷新课时列表
                     // this.getCourseList();

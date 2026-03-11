@@ -1,10 +1,13 @@
 package org.example.project.request.course
 
+import kotlinx.serialization.Serializable
+
 /**
  * @author: linsixu@ruqimobility.com
  * @date:2026/3/11
  * 用途：创建课时
  */
+@Serializable
 data class CreateCourseReq(
     val templateId: Long,
     val teacherName: String,

@@ -205,7 +205,17 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
     route("/course-classes") {
         // 5.1 创建课时（POST /course-classes）
         post {
+//            try {
+//                val courseClassReq = call.receive<CreateCourseReq>()
+//                println("magic course-classe after")
+//                val response = service.createCourseClass(courseClassReq)
+//                call.respond(response)
+//            } catch (e: Exception) {
+//                println("course-classe failure, e=$e")
+//            }
+            println("magic course-classe after1")
             val courseClassReq = call.receive<CreateCourseReq>()
+            println("magic course-classe after")
             val response = service.createCourseClass(courseClassReq)
             call.respond(response)
         }

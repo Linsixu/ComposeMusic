@@ -347,8 +347,11 @@ class CourseReservationService(
             ApiResponse(success = true, data = id, message = "课时创建成功")
         } catch (e: IllegalArgumentException) {
             ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
+        } catch (e: SQLIntegrityConstraintViolationException) {
+          //机构id+老师id+开始时间去重
+            ApiResponse(success = false, code= course_has_exit_at_same_time, message = "当前时间段你已经有发布课程")
         } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, code = course_has_exit_at_same_time, message = "同一模板同一时段已存在：${e.message}")
+            ApiResponse(success = false, code = course_has_exit_at_same_time, message = "当前时间段你已经有发布课程")
         } catch (e: Exception) {
             ApiResponse(success = false, code = error_other, message = "创建失败：${e.message}")
         }
