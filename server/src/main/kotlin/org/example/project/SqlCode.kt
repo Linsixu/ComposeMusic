@@ -14,14 +14,18 @@ object SqlCode {
 
 
     //学生
-    const val student_has_exit = 7000
+    const val student_has_exit = 6000
 
     const val error_other = 9999
 
     //老师
-    const val teacher_has_exit = 8000
-    const val teacher_has_not_exit = 8001
+    const val teacher_has_exit = 7000
+    const val teacher_has_not_exit = 7001
 
     //课程模版
-    const val template_course_has_exit = 9000
+    const val template_course_has_exit = 8000
+
+    //课时
+    const val course_has_exit_at_same_time = 9000
+
 }

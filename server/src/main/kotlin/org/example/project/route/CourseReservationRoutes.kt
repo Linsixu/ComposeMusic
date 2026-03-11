@@ -21,6 +21,7 @@ import io.ktor.server.routing.*
 import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
+import org.example.project.request.course.CreateCourseReq
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -204,8 +205,8 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
     route("/course-classes") {
         // 5.1 创建课时（POST /course-classes）
         post {
-            val courseClass = call.receive<CourseClass>()
-            val response = service.createCourseClass(courseClass)
+            val courseClassReq = call.receive<CreateCourseReq>()
+            val response = service.createCourseClass(courseClassReq)
             call.respond(response)
         }
 

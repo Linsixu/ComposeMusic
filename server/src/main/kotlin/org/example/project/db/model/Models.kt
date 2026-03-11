@@ -74,12 +74,13 @@ data class CourseTemplate(
 data class CourseClass(
     val classId: Long? = null,
     val templateId: Long,
-    val classTimestampMs: Long,
+    val teacherId: Long,
+    val institutionId: Long,
+    val startMillisecondTime: Long,
+    val duration: Int,
     val status: Int = 1,
     @Serializable(with = LocalDateTimeIso8601Serializer::class)
     val createTime: LocalDateTime? = null,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val updateTime: LocalDateTime? = null
 )
 
 // 预约记录模型

@@ -5,9 +5,16 @@ package org.example.project.db.table
  * @date:2026/3/4
  * 用途：可预约课时
  */
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.CourseClass
 import org.example.project.db.table.CourseClasses.classId
+import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
@@ -17,14 +24,18 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
+import java.time.ZoneOffset
+import java.time.LocalDateTime as JavaLocalDateTime
 
-object CourseClasses : Table("course_class") {
-    val classId = long("class_id").autoIncrement()
+object CourseClasses : Table("class_sessions") {
+    val classId = long("id").autoIncrement()
     val templateId = long("template_id")
-    val classTimestampMs = long("class_timestamp_ms")
+    val teacherId = long("teacher_id")
+    val institutionId = long("institution_id")
+    val startMillisecondTime = long("start_time_ms")
+    val duration = integer("duration")
     val status = integer("status")
-    val createTime = datetime("create_time")
-    val updateTime = datetime("update_time")
+    val createTime = datetime("created_at")
 
     override val primaryKey = PrimaryKey(classId)
 }
@@ -33,16 +44,21 @@ class CourseClassDAO {
     private fun resultRowToCourseClass(row: ResultRow) = CourseClass(
         classId = row[CourseClasses.classId],
         templateId = row[CourseClasses.templateId],
-        classTimestampMs = row[CourseClasses.classTimestampMs],
+        teacherId = row[CourseClasses.teacherId],
+        institutionId = row[CourseClasses.institutionId],
+        startMillisecondTime = row[CourseClasses.startMillisecondTime],
+        duration = row[CourseClasses.duration],
         status = row[CourseClasses.status],
-        createTime = row[CourseClasses.createTime],
-        updateTime = row[CourseClasses.updateTime]
+        createTime = row[CourseClasses.createTime]
     )
 
     suspend fun create(courseClass: CourseClass): Long = dbQuery {
         CourseClasses.insert {
             it[templateId] = courseClass.templateId
-            it[classTimestampMs] = courseClass.classTimestampMs
+            it[teacherId] = courseClass.teacherId
+            it[institutionId] = courseClass.institutionId
+            it[startMillisecondTime] = courseClass.startMillisecondTime
+            it[duration] = courseClass.duration
             it[status] = courseClass.status
         } get CourseClasses.classId
     }

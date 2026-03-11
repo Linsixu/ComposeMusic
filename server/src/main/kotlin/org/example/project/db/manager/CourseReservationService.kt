@@ -6,10 +6,12 @@ package org.example.project.db.manager
  * 用途：核心服务
  */
 
+import org.example.project.SqlCode.course_has_exit_at_same_time
 import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
 import org.example.project.SqlCode.institution_not_exit
 import org.example.project.SqlCode.student_has_exit
+import org.example.project.SqlCode.success_code
 import org.example.project.SqlCode.teacher_has_not_exit
 import org.example.project.SqlCode.template_course_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
@@ -29,6 +31,7 @@ import org.example.project.db.table.TeacherDAO
 import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
+import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseTemplateResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import java.sql.SQLIntegrityConstraintViolationException
@@ -329,14 +332,25 @@ class CourseReservationService(
     }
 
     // ========== 课时服务 ==========
-    suspend fun createCourseClass(courseClass: CourseClass): ApiResponse<Long> {
+    suspend fun createCourseClass(courseClassReq: CreateCourseReq): ApiResponse<Long> {
         return try {
+            val teacher = teacherDAO.findByName(courseClassReq.teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+            val courseClass = CourseClass(
+                templateId = courseClassReq.templateId,
+                teacherId = teacher.teacherId!!,
+                institutionId = teacher.institutionId,
+                startMillisecondTime = courseClassReq.startMillisecondTime,
+                duration = courseClassReq.duration,
+                status = courseClassReq.status
+                )
             val id = courseClassDAO.create(courseClass)
             ApiResponse(success = true, data = id, message = "课时创建成功")
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
         } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, message = "同一模板同一时段已存在：${e.message}")
+            ApiResponse(success = false, code = course_has_exit_at_same_time, message = "同一模板同一时段已存在：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "创建失败：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "创建失败：${e.message}")
         }
     }
 
