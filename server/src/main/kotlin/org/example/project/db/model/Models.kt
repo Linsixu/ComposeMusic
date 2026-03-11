@@ -66,9 +66,7 @@ data class CourseTemplate(
     val classDuration: Int = 60,
     val description: String? = null,
     @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val createTime: LocalDateTime? = null,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val updateTime: LocalDateTime? = null
+    val createTime: LocalDateTime? = null
 )
 
 // 可预约课时模型
