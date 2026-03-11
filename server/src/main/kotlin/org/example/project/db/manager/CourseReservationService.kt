@@ -7,6 +7,7 @@ package org.example.project.db.manager
  */
 
 import org.example.project.SqlCode.course_has_exit_at_same_time
+import org.example.project.SqlCode.course_id_has_not_exit
 import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
 import org.example.project.SqlCode.institution_not_exit
@@ -365,8 +366,20 @@ class CourseReservationService(
 
     suspend fun deleteCourseClass(id: Long): ApiResponse<Boolean> {
         return try {
-            val success = courseClassDAO.delete(id)
-            ApiResponse(success = success, message = if (success) "删除成功" else "课时不存在")
+            dbQuery {
+                val currentCourse = courseClassDAO.findById(id) ?: throw NullPointerException("当前课时不存在，请检查课时id")
+                val success = if (currentCourse.status == 0) {
+                    //已经预约了，从预约表中删除才行
+                    reservationDAO.deleteBySessionId(id)
+                    courseClassDAO.delete(id)
+                } else {
+                    //可预约直接删除
+                    courseClassDAO.delete(id)
+                }
+                ApiResponse(success = success, message = if (success) "删除成功" else "课时不存在")
+            }
+        } catch (e: NullPointerException) {
+            ApiResponse(success = false,code = course_id_has_not_exit,message = "${e.message}")
         } catch (e: Exception) {
             ApiResponse(success = false, message = "删除失败：${e.message}")
         }
@@ -523,13 +536,13 @@ class CourseReservationService(
                 }
 
                 // 4.2 创建预约记录（状态=1：已预约）
-                val reservation = StudentReservation(
-                    studentId = studentId,
-                    classId = classId,
-                    reservationTimestampMs = System.currentTimeMillis(), // 抢占时间
-                    status = 1
-                )
-                reservationDAO.create(reservation)
+//                val reservation = StudentReservation(
+//                    studentId = studentId,
+//                    classId = classId,
+//                    reservationTimestampMs = System.currentTimeMillis(), // 抢占时间
+//                    status = 1
+//                )
+//                reservationDAO.create(reservation)
 
                 // 5. 事务提交（dbQuery 自动处理事务，无异常则提交）
                 true

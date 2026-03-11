@@ -221,7 +221,7 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
         }
 
         // 5.2 删除课时（DELETE /course-classes/{id}）
-        delete("{id}") {
+        get("/delete/{id}") {
             val id = call.parameters["id"]?.toLong() ?: throw IllegalArgumentException("课时ID不能为空")
             val response = service.deleteCourseClass(id)
             call.respond(response)

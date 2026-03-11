@@ -1168,18 +1168,18 @@
                                 <label class="form-label">课时ID</label>
                                 <input v-model="classForm.id" class="form-control" type="number" placeholder="请输入课时ID">
                             </div>
-                            <div class="form-group form-col-6">
+                            <!-- <div class="form-group form-col-6">
                                 <label class="form-label">状态</label>
                                 <select v-model="classForm.status">
                                     <option value="1">可预约</option>
                                     <option value="2">已抢占</option>
                                     <option value="3">已取消</option>
                                 </select>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="btn-row">
-                            <button class="btn btn-primary" @click="updateClassStatus"><i class="ri-refresh-line"></i>更新状态</button>
+                            <!-- <button class="btn btn-primary" @click="updateClassStatus"><i class="ri-refresh-line"></i>更新状态</button> -->
                             <button class="btn btn-ghost" @click="deleteClass"><i class="ri-delete-bin-line"></i>删除课时</button>
                         </div>
 
@@ -1880,8 +1880,13 @@
                 async deleteClass() {
                     if (!this.classForm.id) { this.resultText = '请输入课时ID'; return; }
                     try {
-                        const res = await axios.delete(`${this.baseUrl}/course-classes/${this.classForm.id}`);
+                        const res = await axios.get(`${this.baseUrl}/course-classes/delete/${this.classForm.id}`);
                         this.resultText = this.formatResult(res.data);
+                        if (res.data.code == 200) {
+                            alert("删除成功")
+                        } else {
+                            alert(`删除失败：${res.data.message}`)
+                        }
                         this.getAllClasses();
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },

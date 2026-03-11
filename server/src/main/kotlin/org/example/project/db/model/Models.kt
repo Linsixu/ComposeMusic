@@ -87,14 +87,11 @@ data class CourseClass(
 @Serializable
 data class StudentReservation(
     val reservationId: Long? = null,
-    val studentId: Long,
     val classId: Long,
-    val reservationTimestampMs: Long,
-    val status: Int = 1,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val createTime: LocalDateTime? = null,
-    @Serializable(with = LocalDateTimeIso8601Serializer::class)
-    val updateTime: LocalDateTime? = null
+    val studentId: Long,
+    val institutionId: Long,
+    val bookedAtms: Long,
+    val status: Int = 1
 )
 
 // 抢占课时请求模型

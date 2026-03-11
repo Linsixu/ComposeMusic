@@ -12,14 +12,13 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
-object StudentReservations : Table("student_reservation") {
-    val reservationId = long("reservation_id").autoIncrement()
+object StudentReservations : Table("reservations") {
+    val reservationId = long("id").autoIncrement()
+    val classId = long("session_id")
     val studentId = long("student_id")
-    val classId = long("class_id")
-    val reservationTimestampMs = long("reservation_timestamp_ms")
+    val institutionId = long("institution_id")
     val status = integer("status")
-    val createTime = datetime("create_time")
-    val updateTime = datetime("update_time")
+    val bookedAtms = long("booked_at_ms")
 
     override val primaryKey = PrimaryKey(reservationId)
 }
@@ -29,10 +28,9 @@ class StudentReservationDAO {
         reservationId = row[StudentReservations.reservationId],
         studentId = row[StudentReservations.studentId],
         classId = row[StudentReservations.classId],
-        reservationTimestampMs = row[StudentReservations.reservationTimestampMs],
+        institutionId = row[StudentReservations.institutionId],
         status = row[StudentReservations.status],
-        createTime = row[StudentReservations.createTime],
-        updateTime = row[StudentReservations.updateTime]
+        bookedAtms = row[StudentReservations.bookedAtms]
     )
 
     suspend fun create(reservation: StudentReservation): Long = dbQuery {
@@ -45,6 +43,10 @@ class StudentReservationDAO {
 
     suspend fun delete(id: Long): Boolean = dbQuery {
         StudentReservations.deleteWhere { reservationId eq id } > 0
+    }
+
+    suspend fun deleteBySessionId(sessionId: Long): Boolean = dbQuery {
+        StudentReservations.deleteWhere { classId eq sessionId } > 0
     }
 
     suspend fun updateStatus(id: Long, status: Int): Boolean = dbQuery {

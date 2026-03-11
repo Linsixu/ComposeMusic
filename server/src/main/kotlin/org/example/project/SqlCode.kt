@@ -27,5 +27,7 @@ object SqlCode {
 
     //课时
     const val course_has_exit_at_same_time = 9000
+    //课时id不存在
+    const val course_id_has_not_exit = 9001
 
 }
