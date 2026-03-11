@@ -52,12 +52,15 @@ class TeacherDAO {
 
     suspend fun findById(id: Long): Teacher? = dbQuery {
         Teachers.selectAll().where { teacherId eq id }
-            .singleOrNull()?.let { resultRowToTeacher(it) }
+            .firstOrNull()?.let { resultRowToTeacher(it) }
     }
 
     suspend fun findByName(teacherNameParam: String): Teacher? = dbQuery {
         Teachers.selectAll().where { teacherName eq teacherNameParam }
-            .singleOrNull()?.let { resultRowToTeacher(it) }
+            .firstOrNull()?.let {
+                println("magic findByName it=$it")
+                resultRowToTeacher(it)
+            }
     }
 
     suspend fun findAll(): List<Teacher> = dbQuery {

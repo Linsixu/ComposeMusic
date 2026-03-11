@@ -844,8 +844,8 @@
                                 <input v-model="templateId" class="form-control" type="number" placeholder="请输入模板ID">
                             </div>
                             <div class="form-group form-col-6">
-                                <label class="form-label">老师ID</label>
-                                <input v-model="templateTeacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                                <label class="form-label">老师名称</label>
+                                <input v-model="templateTeacherName" class="form-control" placeholder="请输入老师ID">
                             </div>
                         </div>
 
@@ -1162,7 +1162,7 @@
 
                     templateForm: { id: '', name: '', subject: '', teacherName: '', classDuration: 60, desc: '', updateName: '' },
                     templateId: '',
-                    templateTeacherId: '',
+                    templateTeacherName: '',
                     templateList: [],
 
                     classForm: { id: '', templateId: '', classTimestampMs: '', status: 1 },
@@ -1477,9 +1477,10 @@
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getTemplatesByTeacher() {
-                    if (!this.templateTeacherId) { this.resultText = '请输入老师ID'; return; }
+                    if (!this.templateTeacherName) { this.resultText = '请输入老师名称'; return; }
                     try {
-                        const res = await axios.get(`${this.baseUrl}/course-templates/teacher/${this.templateTeacherId}`);
+                        const encodedTeacherName = encodeURIComponent(this.templateTeacherName);
+                        const res = await axios.get(`${this.baseUrl}/course-templates/teacher/${encodedTeacherName}`);
                         this.resultText = this.formatResult(res.data);
                         this.templateList = res.data.data || [];
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }

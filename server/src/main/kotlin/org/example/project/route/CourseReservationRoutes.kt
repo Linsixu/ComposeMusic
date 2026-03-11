@@ -21,6 +21,8 @@ import io.ktor.server.routing.*
 import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 // 封装所有路由，依赖注入服务层
 fun Route.courseReservationRoutes(service: CourseReservationService) {
@@ -187,10 +189,13 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
             call.respond(response)
         }
 
-        // 4.6 根据老师ID查询模板（GET /course-templates/teacher/{teacherId}）
-        get("teacher/{teacherId}") {
-            val teacherId = call.parameters["teacherId"]?.toLong() ?: throw IllegalArgumentException("老师ID不能为空")
-            val response = service.getTemplatesByTeacher(teacherId)
+        // 4.6 根据老师ID查询模板（GET /course-templates/teacher/{teacherName}）
+        get("teacher/{teacherName}") {
+            val encodedTeacherName = call.parameters["teacherName"]
+                ?: throw IllegalArgumentException("路径参数teacherName缺失")
+            val teacherName = URLDecoder.decode(encodedTeacherName, StandardCharsets.UTF_8.name())
+            println("magic query teacherId=$teacherName")
+            val response = service.getTemplatesByTeacher(teacherName)
             call.respond(response)
         }
     }
