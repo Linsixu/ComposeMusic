@@ -243,15 +243,21 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
         }
 
         // 5.5 查询所有课时（GET /course-classes）
-        get {
-            val response = service.getAllCourseClasses()
+        get("all/{classTeacherName}") {
+            val encodedTeacherName = call.parameters["classTeacherName"]
+                ?: throw IllegalArgumentException("路径参数teacherName缺失")
+            val teacherName = URLDecoder.decode(encodedTeacherName, StandardCharsets.UTF_8.name())
+            val response = service.getAllCourseClasses(teacherName)
             call.respond(response)
         }
 
         // 5.6 查询模板下可预约课时（GET /course-classes/available/{templateId}）
-        get("available/{templateId}") {
-            val templateId = call.parameters["templateId"]?.toLong() ?: throw IllegalArgumentException("模板ID不能为空")
-            val response = service.getAvailableClassesByTemplate(templateId)
+        get("available/{classTeacherName}") {
+            val encodedTeacherName = call.parameters["classTeacherName"]
+                ?: throw IllegalArgumentException("路径参数teacherName缺失")
+            val teacherName = URLDecoder.decode(encodedTeacherName, StandardCharsets.UTF_8.name())
+            println("magic available teacherName=$teacherName")
+            val response = service.getAvailableClassesByTemplate(teacherName)
             call.respond(response)
         }
     }

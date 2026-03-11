@@ -5,16 +5,9 @@ package org.example.project.db.table
  * @date:2026/3/4
  * 用途：可预约课时
  */
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.CourseClass
 import org.example.project.db.table.CourseClasses.classId
-import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
@@ -24,8 +17,6 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
-import java.time.ZoneOffset
-import java.time.LocalDateTime as JavaLocalDateTime
 
 object CourseClasses : Table("class_sessions") {
     val classId = long("id").autoIncrement()
@@ -80,6 +71,18 @@ class CourseClassDAO {
 
     suspend fun findAll(): List<CourseClass> = dbQuery {
         CourseClasses.selectAll().map { resultRowToCourseClass(it) }
+    }
+
+    suspend fun findAllByTeacherId(teacherId: Long): List<CourseClass>? = dbQuery {
+        CourseClasses.selectAll().where {
+            CourseClasses.teacherId eq teacherId
+        }.map { resultRowToCourseClass(it) }
+    }
+
+    suspend fun findAvailableAllByTeacherId(teacherId: Long): List<CourseClass>? = dbQuery {
+        CourseClasses.selectAll().where {
+            (CourseClasses.teacherId eq teacherId and (CourseClasses.status eq 1))
+        }.map { resultRowToCourseClass(it) }
     }
 
     suspend fun findAvailableByTemplate(templateId: Long): List<CourseClass> = dbQuery {

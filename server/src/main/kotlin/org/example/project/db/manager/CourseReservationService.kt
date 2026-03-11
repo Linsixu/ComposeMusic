@@ -11,7 +11,6 @@ import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
 import org.example.project.SqlCode.institution_not_exit
 import org.example.project.SqlCode.student_has_exit
-import org.example.project.SqlCode.success_code
 import org.example.project.SqlCode.teacher_has_not_exit
 import org.example.project.SqlCode.template_course_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
@@ -32,6 +31,7 @@ import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
+import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import java.sql.SQLIntegrityConstraintViolationException
@@ -283,35 +283,11 @@ class CourseReservationService(
 
     suspend fun getAllCourseTemplates(): ApiResponse<List<QueryCourseTemplateResponse>> {
         return try {
-            val listResponse = ArrayList<QueryCourseTemplateResponse>()
-            val list = templateDAO.findAll()
-            list.forEach {
-                val teacher = teacherDAO.findById(it.teacherId) ?: throw IllegalArgumentException("当前老师不存在系统中")
-                listResponse.add(QueryCourseTemplateResponse(
-                    templateName = it.templateName,
-                    templateId = it.templateId,
-                    institutionId = it.institutionId,
-                    teacherName = teacher.teacherName,
-                    subject = it.subject,
-                    classDuration = it.classDuration,
-                    description = it.description
-                ))
-            }
-            ApiResponse(success = true, data = listResponse)
-        } catch (e: IllegalArgumentException) {
-            ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
-        } catch (e: Exception) {
-            ApiResponse(success = false, message = "查询失败：${e.message}")
-        }
-    }
-
-    suspend fun getTemplatesByTeacher(teacherName: String): ApiResponse<List<QueryCourseTemplateResponse>> {
-        return try {
-            val listResponse = ArrayList<QueryCourseTemplateResponse>()
-            val list = templateDAO.findAll()
-            list.forEach {
-                val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
-                if (teacher.teacherId == it.teacherId) {
+            dbQuery {
+                val listResponse = ArrayList<QueryCourseTemplateResponse>()
+                val list = templateDAO.findAll()
+                list.forEach {
+                    val teacher = teacherDAO.findById(it.teacherId) ?: throw IllegalArgumentException("当前老师不存在系统中")
                     listResponse.add(QueryCourseTemplateResponse(
                         templateName = it.templateName,
                         templateId = it.templateId,
@@ -322,8 +298,36 @@ class CourseReservationService(
                         description = it.description
                     ))
                 }
+                ApiResponse(success = true, data = listResponse)
             }
-            ApiResponse(success = true, data = listResponse)
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
+        } catch (e: Exception) {
+            ApiResponse(success = false, message = "查询失败：${e.message}")
+        }
+    }
+
+    suspend fun getTemplatesByTeacher(teacherName: String): ApiResponse<List<QueryCourseTemplateResponse>> {
+        return try {
+            dbQuery {
+                val listResponse = ArrayList<QueryCourseTemplateResponse>()
+                val list = templateDAO.findAll()
+                list.forEach {
+                    val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                    if (teacher.teacherId == it.teacherId) {
+                        listResponse.add(QueryCourseTemplateResponse(
+                            templateName = it.templateName,
+                            templateId = it.templateId,
+                            institutionId = it.institutionId,
+                            teacherName = teacher.teacherName,
+                            subject = it.subject,
+                            classDuration = it.classDuration,
+                            description = it.description
+                        ))
+                    }
+                }
+                ApiResponse(success = true, data = listResponse)
+            }
         } catch (e: IllegalArgumentException) {
             ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
         } catch (e: Exception) {
@@ -334,17 +338,19 @@ class CourseReservationService(
     // ========== 课时服务 ==========
     suspend fun createCourseClass(courseClassReq: CreateCourseReq): ApiResponse<Long> {
         return try {
-            val teacher = teacherDAO.findByName(courseClassReq.teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
-            val courseClass = CourseClass(
-                templateId = courseClassReq.templateId,
-                teacherId = teacher.teacherId!!,
-                institutionId = teacher.institutionId,
-                startMillisecondTime = courseClassReq.startMillisecondTime,
-                duration = courseClassReq.duration,
-                status = courseClassReq.status
+            dbQuery {
+                val teacher = teacherDAO.findByName(courseClassReq.teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val courseClass = CourseClass(
+                    templateId = courseClassReq.templateId,
+                    teacherId = teacher.teacherId!!,
+                    institutionId = teacher.institutionId,
+                    startMillisecondTime = courseClassReq.startMillisecondTime,
+                    duration = courseClassReq.duration,
+                    status = courseClassReq.status
                 )
-            val id = courseClassDAO.create(courseClass)
-            ApiResponse(success = true, data = id, message = "课时创建成功")
+                val id = courseClassDAO.create(courseClass)
+                ApiResponse(success = true, data = id, message = "课时创建成功")
+            }
         } catch (e: IllegalArgumentException) {
             ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
         } catch (e: SQLIntegrityConstraintViolationException) {
@@ -384,22 +390,51 @@ class CourseReservationService(
         }
     }
 
-    suspend fun getAllCourseClasses(): ApiResponse<List<CourseClass>> {
+    suspend fun getAllCourseClasses(teacherName: String): ApiResponse<List<QueryCourseResponse>> {
         return try {
-            val list = courseClassDAO.findAll()
-            ApiResponse(success = true, data = list)
+            dbQuery {
+                val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val outList = ArrayList<QueryCourseResponse>()
+                val list = courseClassDAO.findAllByTeacherId(teacher.teacherId!!)
+                list?.forEach {
+                    outList.add(it.toQueryCourseResponse(teacherName))
+                }
+                ApiResponse(success = true, data = outList)
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
         } catch (e: Exception) {
             ApiResponse(success = false, message = "查询失败：${e.message}")
         }
     }
 
-    suspend fun getAvailableClassesByTemplate(templateId: Long): ApiResponse<List<CourseClass>> {
+    suspend fun getAvailableClassesByTemplate(teacherName: String): ApiResponse<List<QueryCourseResponse>> {
         return try {
-            val list = courseClassDAO.findAvailableByTemplate(templateId)
-            ApiResponse(success = true, data = list)
+            dbQuery {
+                val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val outList = ArrayList<QueryCourseResponse>()
+                val list = courseClassDAO.findAvailableAllByTeacherId(teacherId = teacher.teacherId!!)
+                list?.forEach {
+                    outList.add(it.toQueryCourseResponse(teacherName))
+                }
+                ApiResponse(success = true, data = outList)
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
         } catch (e: Exception) {
             ApiResponse(success = false, message = "查询失败：${e.message}")
         }
+    }
+
+    private fun CourseClass.toQueryCourseResponse(teacherName: String): QueryCourseResponse {
+        return QueryCourseResponse(
+            classId = this.classId!!,
+            templateId = this.templateId,
+            teacherName = teacherName,
+            startMillisecondTime = this.startMillisecondTime,
+            duration = this.duration,
+            status = this.status
+        )
     }
 
     // ========== 预约记录服务 ==========

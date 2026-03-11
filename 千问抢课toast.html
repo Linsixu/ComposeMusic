@@ -1139,17 +1139,13 @@
 
                         <div class="form-grid" style="margin-top: 14px;">
                             <div class="form-group form-col-6">
-                                <label class="form-label">课时ID</label>
-                                <input v-model="classId" class="form-control" type="number" placeholder="请输入课时ID">
-                            </div>
-                            <div class="form-group form-col-6">
-                                <label class="form-label">模板ID</label>
-                                <input v-model="classTemplateId" class="form-control" type="number" placeholder="请输入模板ID">
+                                <label class="form-label">老师名字</label>
+                                <input v-model="classTeacherName" class="form-control" placeholder="请输入老师名字">
                             </div>
                         </div>
 
                         <div class="btn-row">
-                            <button class="btn btn-primary" @click="getClassById"><i class="ri-search-line"></i>查询单个</button>
+                            <!-- <button class="btn btn-primary" @click="getClassById"><i class="ri-search-line"></i>查询单个</button> -->
                             <button class="btn btn-ghost" @click="getAvailableClasses"><i class="ri-check-double-line"></i>可预约课时</button>
                             <button class="btn btn-ghost" @click="getAllClasses"><i class="ri-list-check"></i>查询全部</button>
                         </div>
@@ -1157,10 +1153,10 @@
                         <div v-if="classList.length > 0" class="list" style="margin-top: 12px;">
                             <div v-for="item in classList" class="list-item">
                                 <div class="list-header">
-                                    <span>ID: {{item.classId}}</span>
+                                    <span>课时ID: {{item.classId}}</span>
                                     <span :class="getStatusTagClass(item.status)">{{getStatusText(item.status)}}</span>
                                 </div>
-                                <div class="list-desc">模板ID: {{item.templateId}} | 开始时间: {{timestampToDateTime(item.classTimestampMs)}}</div>
+                                <div class="list-desc">老师名称: {{item.teacherName}} | 开始时间: {{timestampToDateTime(item.startMillisecondTime)}} - 结束时间: {{timestampToDateTime(item.startMillisecondTime + item.duration * 60 * 1000)}}</div>
                             </div>
                         </div>
                         <div v-else class="empty-state">
@@ -1389,7 +1385,7 @@
                     templateList: [],
 
                     classForm: { id: '', templateId: '', classTimestampMs: '', status: 1 },
-                    classId: '',
+                    classTeacherName: '',
                     classTemplateId: '',
                     classList: [],
 
@@ -1855,16 +1851,20 @@
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getAvailableClasses() {
-                    if (!this.classTemplateId) { this.resultText = '请输入模板ID'; return; }
+                    if (!this.classTeacherName) { this.resultText = '请输入老师名字'; return; }
+                    console.log("classTeacherName", this.classTeacherName);
+                    const encodedTeacherName = encodeURIComponent(this.classTeacherName);
                     try {
-                        const res = await axios.get(`${this.baseUrl}/course-classes/available/${this.classTemplateId}`);
+                        const res = await axios.get(`${this.baseUrl}/course-classes/available/${encodedTeacherName}`);
                         this.resultText = this.formatResult(res.data);
                         this.classList = res.data.data || [];
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getAllClasses() {
+                    if (!this.classTeacherName) { this.resultText = '请输入老师名字'; return; }
+                    const encodedTeacherName = encodeURIComponent(this.classTeacherName);
                     try {
-                        const res = await axios.get(`${this.baseUrl}/course-classes`);
+                        const res = await axios.get(`${this.baseUrl}/course-classes/all/${encodedTeacherName}`);
                         this.resultText = this.formatResult(res.data);
                         this.classList = res.data.data || [];
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
