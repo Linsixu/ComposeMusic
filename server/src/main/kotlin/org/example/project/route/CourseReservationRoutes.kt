@@ -18,6 +18,7 @@ import org.example.project.db.model.Teacher
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 
@@ -153,7 +154,7 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
     route("/course-templates") {
         // 4.1 创建课程模板（POST /course-templates）
         post {
-            val template = call.receive<CourseTemplate>()
+            val template = call.receive<CreateCourseTemplateReq>()
             val response = service.createCourseTemplate(template)
             call.respond(response)
         }

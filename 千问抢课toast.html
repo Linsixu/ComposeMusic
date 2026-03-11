@@ -821,8 +821,8 @@
                                 <input v-model="templateForm.subject" class="form-control" placeholder="请输入授课科目">
                             </div>
                             <div class="form-group form-col-6">
-                                <label class="form-label">授课老师ID</label>
-                                <input v-model="templateForm.teacherId" class="form-control" type="number" placeholder="请输入老师ID">
+                                <label class="form-label">授课老师名称</label>
+                                <input v-model="templateForm.teacherName" class="form-control" placeholder="请输入老师名称">
                             </div>
                             <div class="form-group form-col-6">
                                 <label class="form-label">课时时长（分钟）</label>
@@ -1160,7 +1160,7 @@
                     studentId: '',
                     studentList: [],
 
-                    templateForm: { id: '', name: '', subject: '', teacherId: '', classDuration: 60, desc: '', updateName: '' },
+                    templateForm: { id: '', name: '', subject: '', teacherName: '', classDuration: 60, desc: '', updateName: '' },
                     templateId: '',
                     templateTeacherId: '',
                     templateList: [],
@@ -1460,12 +1460,12 @@
                         const res = await axios.post(`${this.baseUrl}/course-templates`, {
                             templateName: this.templateForm.name,
                             subject: this.templateForm.subject,
-                            teacherId: this.templateForm.teacherId,
+                            teacherName: this.templateForm.teacherName,
                             classDuration: this.templateForm.classDuration,
                             description: this.templateForm.desc
                         });
                         this.resultText = this.formatResult(res.data);
-                        this.getAllTemplates();
+                        //this.getAllTemplates();
                     } catch (e) { this.resultText = `请求失败：${e.message}`; }
                 },
                 async getTemplateById() {
@@ -1497,7 +1497,7 @@
                         const res = await axios.put(`${this.baseUrl}/course-templates/${this.templateForm.id}`, {
                             templateName: this.templateForm.updateName,
                             subject: this.templateForm.subject,
-                            teacherId: this.templateForm.teacherId,
+                            teacherName: this.templateForm.teacherName,
                             classDuration: this.templateForm.classDuration,
                             description: this.templateForm.desc
                         });

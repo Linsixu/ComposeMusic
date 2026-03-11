@@ -7,15 +7,15 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
-object CourseTemplates : Table("course_template") {
-    val templateId = long("template_id").autoIncrement()
-    val templateName = varchar("template_name", 100)
-    val subject = varchar("subject", 50).nullable()
+object CourseTemplates : Table("course_templates") {
+    val templateId = long("id").autoIncrement()
+    val templateName = varchar("title", 100)
     val teacherId = long("teacher_id")
-    val classDuration = integer("class_duration")
+    val institutionId = long("institution_id")
+    val classDuration = integer("duration_minutes")
     val description = text("description").nullable()
-    val createTime = datetime("create_time")
-    val updateTime = datetime("update_time")
+    val subject = varchar("subject", 50)
+    val createTime = datetime("created_at")
 
     override val primaryKey = PrimaryKey(templateId)
 }
@@ -23,22 +23,23 @@ object CourseTemplates : Table("course_template") {
 class CourseTemplateDAO {
     private fun resultRowToTemplate(row: ResultRow) = CourseTemplate(
         templateId = row[CourseTemplates.templateId],
-        templateName = row[CourseTemplates.templateName],
-        subject = row[CourseTemplates.subject],
         teacherId = row[CourseTemplates.teacherId],
+        institutionId = row[CourseTemplates.institutionId],
         classDuration = row[CourseTemplates.classDuration],
         description = row[CourseTemplates.description],
         createTime = row[CourseTemplates.createTime],
-        updateTime = row[CourseTemplates.updateTime]
+        subject = row[CourseTemplates.subject],
+        templateName = row[CourseTemplates.templateName]
     )
 
     suspend fun create(template: CourseTemplate): Long = dbQuery {
         CourseTemplates.insert {
-            it[templateName] = template.templateName
-            it[subject] = template.subject
+            it[institutionId] = template.institutionId
             it[teacherId] = template.teacherId
             it[classDuration] = template.classDuration
             it[description] = template.description
+            it[subject] = template.subject
+            it[templateName] = template.templateName
         } get CourseTemplates.templateId
     }
 
@@ -48,11 +49,12 @@ class CourseTemplateDAO {
 
     suspend fun update(id: Long, template: CourseTemplate): Boolean = dbQuery {
         CourseTemplates.update({ templateId eq id }) {
-            it[templateName] = template.templateName
-            it[subject] = template.subject
+            it[institutionId] = template.institutionId
             it[teacherId] = template.teacherId
             it[classDuration] = template.classDuration
             it[description] = template.description
+            it[subject] = template.subject
+            it[templateName] = template.templateName
         } > 0
     }
 

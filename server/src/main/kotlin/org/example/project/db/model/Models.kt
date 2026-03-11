@@ -57,10 +57,11 @@ data class Student(
 // 课程模板模型
 @Serializable
 data class CourseTemplate(
-    val templateId: Long? = null,
     val templateName: String,
-    val subject: String? = null,
+    val templateId: Long? = null,
+    val institutionId: Long,
     val teacherId: Long,
+    val subject: String,
     @SerialName("classDuration")
     val classDuration: Int = 60,
     val description: String? = null,

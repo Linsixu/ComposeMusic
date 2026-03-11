@@ -10,6 +10,8 @@ import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
 import org.example.project.SqlCode.institution_not_exit
 import org.example.project.SqlCode.student_has_exit
+import org.example.project.SqlCode.teacher_has_not_exit
+import org.example.project.SqlCode.template_course_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.ApiResponse
 import org.example.project.db.model.CourseClass
@@ -24,6 +26,7 @@ import org.example.project.db.table.EduInstitutionDAO
 import org.example.project.db.table.StudentDAO
 import org.example.project.db.table.StudentReservationDAO
 import org.example.project.db.table.TeacherDAO
+import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -216,12 +219,34 @@ class CourseReservationService(
     }
 
     // ========== 课程模板服务 ==========
-    suspend fun createCourseTemplate(template: CourseTemplate): ApiResponse<Long> {
+    suspend fun createCourseTemplate(templateReq: CreateCourseTemplateReq): ApiResponse<Long> {
         return try {
-            val id = templateDAO.create(template)
-            ApiResponse(success = true, data = id, message = "课程模板创建成功")
+            dbQuery {
+                val teacher = teacherDAO.findByName(templateReq.teacherName)
+                    ?: throw IllegalArgumentException("当前老师不存在系统中")
+                println("magic createCourseTemplate id=$teacher")
+                val courseTemplate = CourseTemplate(
+                    templateName = templateReq.templateName,
+                    institutionId = teacher.institutionId,
+                    teacherId = teacher.teacherId!!,
+                    subject = templateReq.subject,
+                    classDuration = templateReq.classDuration,
+                    description = templateReq.description
+                    )
+                val id = templateDAO.create(courseTemplate)
+                println("magic createCourseTemplate id=$id")
+                ApiResponse(success = true, data = id, message = "创建课程模版成功")
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "${e.message}")
+        } catch (e: SQLIntegrityConstraintViolationException){
+            ApiResponse(success = false, code= template_course_has_exit, message = "课程模版已存在，请勿重新添加")
+        } catch (e: ExposedSQLException) {
+            // 数据库异常（如唯一键冲突）
+            ApiResponse(success = false, code = student_has_exit, message = "数据库异常：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "创建失败：${e.message}")
+            // 其他异常
+            ApiResponse(success = false, code = error_other, message = "创建模版失败：${e.message}")
         }
     }
 
