@@ -311,11 +311,10 @@
         }
 
         .list-item {
-            padding: 12px 14px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 8px;
         }
 
         .list-item:last-child {
@@ -327,6 +326,8 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
         .list-desc {
@@ -520,6 +521,167 @@
         .class-actions {
             display: flex;
             gap: 8px;
+        }
+
+        /* 弹窗样式 */
+        .modal-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        }
+
+        .modal-container {
+        width: 400px;
+        background: #fff;
+        border-radius: 8px;
+        padding: 0;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0;
+        }
+
+        .close-btn {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        }
+
+        .close-btn:hover {
+        color: #333;
+        }
+
+        .modal-body {
+        padding: 16px;
+        }
+
+        .form-item {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        }
+
+        .form-item label {
+        width: 80px;
+        text-align: right;
+        margin-right: 10px;
+        font-size: 14px;
+        }
+
+        .form-item input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        }
+
+        .modal-footer {
+        padding: 12px 16px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        }
+
+        .cancel-btn, .confirm-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        }
+
+        .cancel-btn {
+        background: #f5f5f5;
+        color: #666;
+        }
+
+        .confirm-btn {
+        background: #1890ff;
+        color: #fff;
+        }
+
+        .confirm-btn:hover {
+        background: #40a9ff;
+        }
+
+        /* 按钮外层容器：实现右对齐 */
+        .class-btn-wrapper {
+        text-align: right; /* 核心：让按钮右对齐 */
+        margin-bottom: 8px; /* 和下方list-desc保持间距 */
+        }
+
+        /* 核心容器：list-desc + 按钮 同一行 + 按钮右对齐 */
+        .desc-btn-container {
+        display: flex;
+        justify-content: space-between; /* 两端对齐：desc左，按钮右 */
+        align-items: center; /* 垂直居中 */
+        }
+
+
+        /* 创建课时按钮：固定尺寸 + 样式优化 */
+        .create-class-btn {
+            /* 固定合适尺寸 */
+            width: 80px;
+            height: 32px;
+            /* 样式 */
+            background: #1890ff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap; /* 防止文字换行 */
+            transition: background 0.2s;
+            /* 按钮位置：在status-tag下方（通过list-header的margin-bottom实现） */
+        }
+
+        .create-class-btn:hover {
+            background: #40a9ff;
+        }
+
+        /* 原有样式补充 */
+        .list-item {
+        padding: 12px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        }
+
+        .list-header {
+        margin-bottom: 8px;
+        }
+
+       /* 其他原有样式 */
+        .status-tag.status-default {
+        padding: 2px 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        font-size: 14px;
+        margin-left: 8px;
+        }
+
+        .list-desc {
+        font-size: 14px;
+        color: #666;
+        flex: 1; /* 核心：让desc占满左侧空间，按钮自然右对齐 */
+        margin-right: 8px; /* 和按钮保持间距 */
         }
     </style>
 </head>
@@ -855,13 +1017,27 @@
                             <button class="btn btn-ghost" @click="getAllTemplates"><i class="ri-list-check"></i>查询全部</button>
                         </div>
 
+                        <!-- 原有模板列表 -->
+                        <!-- 原有模板列表 -->
                         <div v-if="templateList.length > 0" class="list" style="margin-top: 12px;">
-                            <div v-for="item in templateList" class="list-item">
+                            <div v-for="item in templateList" class="list-item" :key="item.templateId">
                                 <div class="list-header">
-                                    <span>ID: {{item.templateId}}</span>
-                                    <span class="status-tag status-default">{{item.templateName}}</span>
+                                <span>ID: {{item.templateId}}</span>
+                                <span class="status-tag status-default">{{item.templateName}}</span>
                                 </div>
-                                <div class="list-desc">科目: {{item.subject || '未填写'}} | 老师名称: {{item.teacherName}} | 时长: {{item.classDuration}}分钟</div>
+                                
+                                <!-- 核心：list-desc + 按钮 外层容器（实现同一行+右对齐） -->
+                                <div class="desc-btn-container">
+                                <div class="list-desc">
+                                    科目: {{item.subject || '未填写'}} | 老师名称: {{item.teacherName}} | 时长: {{item.classDuration}}分钟
+                                </div>
+                                <button 
+                                    class="create-class-btn" 
+                                    @click="openCreateClassModal(item)"
+                                >
+                                    创建课时
+                                </button>
+                                </div>
                             </div>
                         </div>
                         <div v-else class="empty-state">
@@ -886,6 +1062,48 @@
 
                         <div class="result-box">{{resultText}}</div>
                     </div>
+                </div>
+
+            <!-- 创建课时弹窗 -->
+                <div v-if="showClassModal" class="modal-mask">
+                <div class="modal-container">
+                    <div class="modal-header">
+                    <h3>创建课时</h3>
+                    <button class="close-btn" @click="closeCreateClassModal">×</button>
+                    </div>
+                    <div class="modal-body">
+                    <div class="form-item">
+                        <label>模板ID：</label>
+                        <span>{{currentTemplate.templateId}}</span>
+                    </div>
+                    <div class="form-item">
+                        <label>老师姓名：</label>
+                        <span>{{currentTemplate.teacherName}}</span>
+                    </div>
+                    <div class="form-item">
+                        <label>上课日期：</label>
+                        <input 
+                        type="date" 
+                        v-model="classForm.classDate" 
+                        placeholder="选择日期"
+                        required
+                        >
+                    </div>
+                    <div class="form-item">
+                        <label>开始时间：</label>
+                        <input 
+                        type="time" 
+                        v-model="classForm.startTime" 
+                        placeholder="选择时间"
+                        required
+                        >
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button class="cancel-btn" @click="closeCreateClassModal">取消</button>
+                    <button class="confirm-btn" @click="submitCreateClass">创建</button>
+                    </div>
+                </div>
                 </div>
 
                 <!-- 课时管理 -->
@@ -1177,10 +1395,79 @@
 
                     reserveForm: { studentId: '', templateId: '', classId: '' },
                     availableClassList: [],
-                    selectedClass: null
+                    selectedClass: null,
+
+                    //弹窗
+                    templateList: [], // 原有模板列表
+                    showClassModal: false, // 弹窗显示状态
+                    currentTemplate: {}, // 当前选中的模板
+                    classForm: { // 课时表单数据
+                        classDate: '',
+                        startTime: ''
+                    },
                 }
             },
             methods: {
+                // 打开创建课时弹窗
+                openCreateClassModal(template) {
+                    this.currentTemplate = template;
+                    // 重置表单
+                    this.classForm = {
+                        classDate: '',
+                        startTime: ''
+                    };
+                    this.showClassModal = true;
+                    },
+
+                    // 关闭弹窗
+                    closeCreateClassModal() {
+                    this.showClassModal = false;
+                    this.currentTemplate = {};
+                    },
+
+                    // 提交创建课时（核心：处理中文/特殊字符编码）
+                    async submitCreateClass() {
+                    // 1. 表单校验
+                    if (!this.classForm.classDate || !this.classForm.startTime) {
+                        alert('上课日期和开始时间不能为空！');
+                        return;
+                    }
+                    if (!this.currentTemplate.templateId) {
+                        alert('模板ID不能为空！');
+                        return;
+                    }
+
+                    try {
+                        // 2. 处理中文/特殊字符编码（关键步骤）
+                        const requestData = {
+                        templateId: this.currentTemplate.templateId,
+                        teacherName: encodeURIComponent(this.currentTemplate.teacherName), // 编码老师姓名
+                        classDate: this.classForm.classDate,
+                        startTime: this.classForm.startTime,
+                        status: 1 // 默认可预约状态
+                        };
+
+                        // 3. 发送创建课时请求（POST方式，避免URL编码问题）
+                        const res = await axios.post(`${this.baseUrl}/course-classes`, requestData, {
+                        headers: {
+                            'Content-Type': 'application/json;charset=UTF-8'
+                        }
+                        });
+
+                        // 4. 请求成功处理
+                        alert('课时创建成功！');
+                        this.closeCreateClassModal();
+                        // 可刷新课时列表
+                        //      this.getClassList();
+
+                    } catch (e) {
+                        console.error('创建课时失败：', e);
+                        const errorMsg = e.response?.data?.message || e.message;
+                        alert(`创建课时失败：${errorMsg}`);
+                    }
+                },
+
+
                 // 将日期和时间转换为时间戳
                 convertDateTimeToTimestamp(dateStr, timeStr) {
                     if (!dateStr || !timeStr) {
