@@ -37,6 +37,8 @@ import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
 import org.example.project.request.reservation.CreateReservationReq
+import org.example.project.request.reservation.QueryReservationByStudentInfoReq
+import org.example.project.request.reservation.ReservationResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import java.sql.SQLIntegrityConstraintViolationException
 
@@ -519,12 +521,18 @@ class CourseReservationService(
         }
     }
 
-    suspend fun getAllReservationsByTeacherName(teacherName: String): ApiResponse<List<StudentReservation>> {
+    suspend fun getAllReservationsByTeacherName(teacherName: String): ApiResponse<List<ReservationResponse>> {
         return try {
             dbQuery {
                 val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
-                val list = reservationDAO.findAll()
-                ApiResponse(success = true, data = list)
+                val out = ArrayList<ReservationResponse>()
+                val list = reservationDAO.findByTeacherId(teacher.teacherId!!)
+                list.forEach {
+                    val course = courseClassDAO.findById(it.classId) ?: throw IllegalArgumentException("当前课时找不到")
+                    val student = studentDAO.findById(it.studentId) ?: throw IllegalArgumentException("当前学生不在系统中")
+                    out.add(it.toReservationResponse(teacher, student, course))
+                }
+                ApiResponse(success = true, data = out)
             }
         } catch (e: IllegalArgumentException) {
             ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
@@ -533,14 +541,42 @@ class CourseReservationService(
         }
     }
 
-    suspend fun getReservationsByStudent(studentId: Long): ApiResponse<List<StudentReservation>> {
+    suspend fun getReservationsByStudentName(studentReq: QueryReservationByStudentInfoReq): ApiResponse<List<ReservationResponse>> {
         return try {
-            val list = reservationDAO.findByStudent(studentId)
-            ApiResponse(success = true, data = list)
+            dbQuery {
+                val student = studentDAO.findByUserInfoV2(studentReq.studentName, studentReq.studentPhone) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val out = ArrayList<ReservationResponse>()
+                val list = reservationDAO.findByStudent(student.studentId!!)
+                list.forEach {
+                    val course = courseClassDAO.findById(it.classId) ?: throw IllegalArgumentException("当前课时找不到")
+                    val teacher = teacherDAO.findById(course.teacherId) ?: throw IllegalArgumentException("当前老师找不到")
+                    out.add(it.toReservationResponse(teacher, student, course))
+                }
+                ApiResponse(success = true, data = out)
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
         } catch (e: Exception) {
             ApiResponse(success = false, message = "查询失败：${e.message}")
         }
     }
+
+    private fun StudentReservation.toReservationResponse(
+        teacher: Teacher,
+        student: Student,
+        course: CourseClass
+    ): ReservationResponse {
+        return ReservationResponse(
+            reservationId = this.reservationId!!,
+            teacherName = teacher.teacherName,
+            studentName = student.studentName,
+            status = 1,
+            startMillisecondTime = course.startMillisecondTime,
+            duration = course.duration,
+            reservationTime = this.bookedAtms
+        )
+    }
+
 
     // ========== 核心业务：抢占课时（原子操作）【补全完整代码】 ==========
     suspend fun reserveClass(studentId: Long, classId: Long): ApiResponse<Boolean> {

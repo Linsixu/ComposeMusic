@@ -58,6 +58,12 @@ class StudentDAO {
         }.singleOrNull()?.let { resultRowToStudent(it) }
     }
 
+    suspend fun findByUserInfoV2(name: String, parentPhone: String): Student? = dbQuery {
+        Students.selectAll().where {
+            (studentName eq name) and (phone eq parentPhone)
+        }.singleOrNull()?.let { resultRowToStudent(it) }
+    }
+
     suspend fun findAll(): List<Student> = dbQuery {
         Students.selectAll().map { resultRowToStudent(it) }
     }

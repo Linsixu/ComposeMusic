@@ -1,12 +1,10 @@
 package org.example.project.route
 
 import org.example.project.db.manager.CourseReservationService
-import org.example.project.db.model.CourseClass
 import org.example.project.db.model.CourseTemplate
 import org.example.project.db.model.EduInstitution
 import org.example.project.db.model.ReserveRequest
 import org.example.project.db.model.Student
-import org.example.project.db.model.StudentReservation
 import org.example.project.db.model.Teacher
 
 /**
@@ -23,6 +21,7 @@ import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.reservation.CreateReservationReq
+import org.example.project.request.reservation.QueryReservationByStudentInfoReq
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -293,16 +292,19 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
             call.respond(response)
         }
 
-        // 6.5 查询所有预约记录（GET /reservations）
-        get {
-            val response = service.getAllReservations()
+        // 6.5 查询对应老师下所有预约记录（GET /reservations/teacher）
+        get("teacher/{reservationTeacherName}") {
+            val encodedTeacherName = call.parameters["reservationTeacherName"]
+                ?: throw IllegalArgumentException("路径参数teacherName缺失")
+            val teacherName = URLDecoder.decode(encodedTeacherName, StandardCharsets.UTF_8.name())
+            val response = service.getAllReservationsByTeacherName(teacherName)
             call.respond(response)
         }
 
-        // 6.6 根据学生ID查询预约记录（GET /reservations/student/{studentId}）
-        get("student/{studentId}") {
-            val studentId = call.parameters["studentId"]?.toLong() ?: throw IllegalArgumentException("学生ID不能为空")
-            val response = service.getReservationsByStudent(studentId)
+        // 6.6 根据学生ID查询预约记录（GET /reservations/student）
+        post("student") {
+            val reservation = call.receive<QueryReservationByStudentInfoReq>()
+            val response = service.getReservationsByStudentName(reservation)
             call.respond(response)
         }
     }

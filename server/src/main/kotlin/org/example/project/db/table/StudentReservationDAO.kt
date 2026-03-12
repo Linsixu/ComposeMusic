@@ -8,9 +8,9 @@ package org.example.project.db.table
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.StudentReservation
 import org.example.project.db.table.StudentReservations.reservationId
+import org.example.project.db.table.StudentReservations.teacherId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.kotlin.datetime.datetime
 
 object StudentReservations : Table("reservations") {
     val reservationId = long("id").autoIncrement()
@@ -19,6 +19,7 @@ object StudentReservations : Table("reservations") {
     val institutionId = long("institution_id")
     val status = integer("status")
     val bookedAtms = long("booked_at_ms")
+    val teacherId = long("teacher_id")
 
     override val primaryKey = PrimaryKey(reservationId)
 }
@@ -30,7 +31,8 @@ class StudentReservationDAO {
         classId = row[StudentReservations.classId],
         institutionId = row[StudentReservations.institutionId],
         status = row[StudentReservations.status],
-        bookedAtms = row[StudentReservations.bookedAtms]
+        bookedAtms = row[StudentReservations.bookedAtms],
+        teacherId = row[StudentReservations.teacherId]
     )
 
     suspend fun create(reservation: StudentReservation): Long = dbQuery {
@@ -40,6 +42,7 @@ class StudentReservationDAO {
             it[institutionId] = reservation.institutionId
             it[status] = reservation.status
             it[bookedAtms] = reservation.bookedAtms
+            it[teacherId] = reservation.teacherId
         } get StudentReservations.reservationId
     }
 
@@ -60,6 +63,11 @@ class StudentReservationDAO {
     suspend fun findById(id: Long): StudentReservation? = dbQuery {
         StudentReservations.selectAll().where { reservationId eq id }
             .singleOrNull()?.let { resultRowToReservation(it) }
+    }
+
+    suspend fun findByTeacherId(outTeacherId: Long): List<StudentReservation> = dbQuery {
+        StudentReservations.selectAll().where { teacherId eq outTeacherId }
+            .map { resultRowToReservation(it) }
     }
 
     suspend fun findAll(): List<StudentReservation> = dbQuery {
