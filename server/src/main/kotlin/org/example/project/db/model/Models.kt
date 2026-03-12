@@ -90,6 +90,7 @@ data class StudentReservation(
     val classId: Long,
     val studentId: Long,
     val institutionId: Long,
+    val teacherId: Long,
     val bookedAtms: Long,
     val status: Int = 1
 )

@@ -470,6 +470,7 @@ class CourseReservationService(
                         classId = reservationReq.classId,
                         studentId = localStudent.studentId!!,
                         institutionId = reservationReq.institutionId,
+                        teacherId = reservationReq.teacherId,
                         bookedAtms = System.currentTimeMillis()
                     )
                     val id = reservationDAO.create(studentReservation)
@@ -518,12 +519,17 @@ class CourseReservationService(
         }
     }
 
-    suspend fun getAllReservations(): ApiResponse<List<StudentReservation>> {
+    suspend fun getAllReservationsByTeacherName(teacherName: String): ApiResponse<List<StudentReservation>> {
         return try {
-            val list = reservationDAO.findAll()
-            ApiResponse(success = true, data = list)
+            dbQuery {
+                val teacher = teacherDAO.findByName(teacherName) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val list = reservationDAO.findAll()
+                ApiResponse(success = true, data = list)
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "查询失败：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "查询失败：${e.message}")
         }
     }
 
