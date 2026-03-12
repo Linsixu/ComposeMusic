@@ -8,10 +8,12 @@ package org.example.project.db.manager
 
 import org.example.project.SqlCode.course_has_exit_at_same_time
 import org.example.project.SqlCode.course_id_has_not_exit
+import org.example.project.SqlCode.course_status_has_change
 import org.example.project.SqlCode.error_other
 import org.example.project.SqlCode.institution_has_exit
 import org.example.project.SqlCode.institution_not_exit
 import org.example.project.SqlCode.student_has_exit
+import org.example.project.SqlCode.student_has_not_exit
 import org.example.project.SqlCode.teacher_has_not_exit
 import org.example.project.SqlCode.template_course_has_exit
 import org.example.project.db.DatabaseFactory.dbQuery
@@ -34,6 +36,7 @@ import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
+import org.example.project.request.reservation.CreateReservationReq
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import java.sql.SQLIntegrityConstraintViolationException
 
@@ -410,7 +413,7 @@ class CourseReservationService(
                 val outList = ArrayList<QueryCourseResponse>()
                 val list = courseClassDAO.findAllByTeacherId(teacher.teacherId!!)
                 list?.forEach {
-                    outList.add(it.toQueryCourseResponse(teacherName))
+                    outList.add(it.toQueryCourseResponse(teacher))
                 }
                 ApiResponse(success = true, data = outList)
             }
@@ -428,7 +431,7 @@ class CourseReservationService(
                 val outList = ArrayList<QueryCourseResponse>()
                 val list = courseClassDAO.findAvailableAllByTeacherId(teacherId = teacher.teacherId!!)
                 list?.forEach {
-                    outList.add(it.toQueryCourseResponse(teacherName))
+                    outList.add(it.toQueryCourseResponse(teacher))
                 }
                 ApiResponse(success = true, data = outList)
             }
@@ -439,11 +442,13 @@ class CourseReservationService(
         }
     }
 
-    private fun CourseClass.toQueryCourseResponse(teacherName: String): QueryCourseResponse {
+    private fun CourseClass.toQueryCourseResponse(teacher: Teacher): QueryCourseResponse {
         return QueryCourseResponse(
             classId = this.classId!!,
             templateId = this.templateId,
-            teacherName = teacherName,
+            teacherName = teacher.teacherName,
+            teacherId = teacher.teacherId!!,
+            institutionId = teacher.institutionId,
             startMillisecondTime = this.startMillisecondTime,
             duration = this.duration,
             status = this.status
@@ -451,14 +456,38 @@ class CourseReservationService(
     }
 
     // ========== 预约记录服务 ==========
-    suspend fun createReservation(reservation: StudentReservation): ApiResponse<Long> {
+    suspend fun createReservation(reservationReq: CreateReservationReq): ApiResponse<Long> {
         return try {
-            val id = reservationDAO.create(reservation)
-            ApiResponse(success = true, data = id, message = "预约成功")
+            dbQuery {
+                val localStudent = studentDAO.findByUserInfo(
+                    reservationReq.studentName,
+                    reservationReq.phone,
+                    reservationReq.institutionId)
+                if (localStudent == null) throw NullPointerException("该学生信息不存在系统中")
+                //更改为已预约状态
+                if (courseClassDAO.updateStatus(reservationReq.classId, 1)) {
+                    val studentReservation = StudentReservation(
+                        classId = reservationReq.classId,
+                        studentId = localStudent.studentId!!,
+                        institutionId = reservationReq.institutionId,
+                        bookedAtms = System.currentTimeMillis()
+                    )
+                    val id = reservationDAO.create(studentReservation)
+                    if (id > 0) {
+                        ApiResponse(success = true, data = id, message = "预约成功")
+                    } else {
+                        ApiResponse(success = false, data = id, message = "预约失败")
+                    }
+                } else {
+                    ApiResponse(success = false, code= course_status_has_change, data = -1, message = "预约失败，当前课时状态已变化")
+                }
+            }
+        } catch (e: NullPointerException) {
+            ApiResponse(success = false, code = student_has_not_exit,message = "${e.message}")
         } catch (e: ExposedSQLException) {
-            ApiResponse(success = false, message = "已预约该课时：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "预约失败：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "预约失败：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "预约失败：${e.message}")
         }
     }
 

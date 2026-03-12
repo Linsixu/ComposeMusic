@@ -81,7 +81,7 @@ class CourseClassDAO {
 
     suspend fun findAvailableAllByTeacherId(teacherId: Long): List<CourseClass>? = dbQuery {
         CourseClasses.selectAll().where {
-            (CourseClasses.teacherId eq teacherId and (CourseClasses.status eq 1))
+            (CourseClasses.teacherId eq teacherId and (CourseClasses.status eq 0))
         }.map { resultRowToCourseClass(it) }
     }
 

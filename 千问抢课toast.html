@@ -683,6 +683,113 @@
         flex: 1; /* 核心：让desc占满左侧空间，按钮自然右对齐 */
         margin-right: 8px; /* 和按钮保持间距 */
         }
+
+        /* 课时预约 */
+        .reserve-btn {
+        width: 80px;
+        height: 32px;
+        background: #52c41a;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+        }
+
+        .reserve-btn:hover {
+        background: #73d13d;
+        }
+
+        /* 弹窗样式 */
+        .modal-mask {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        }
+        .modal-container {
+        width: 450px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        .modal-header {
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0;
+        }
+        .close-btn {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #999;
+        }
+        .close-btn:hover {
+        color: #333;
+        }
+        .modal-body {
+        padding: 16px;
+        }
+        .form-item {
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        }
+        .form-item label {
+        width: 80px;
+        text-align: right;
+        margin-right: 10px;
+        font-size: 14px;
+        }
+        .form-item label.required::after {
+        content: '*';
+        color: red;
+        margin-left: 2px;
+        }
+        .form-input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        }
+        .modal-footer {
+        padding: 12px 16px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        }
+        .cancel-btn, .confirm-btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        }
+        .cancel-btn {
+        background: #f5f5f5;
+        color: #666;
+        }
+        .confirm-btn {
+        background: #1890ff;
+        color: #fff;
+        }
+        .confirm-btn:hover {
+        background: #40a9ff;
+        }
+        /* 课时预约 */
     </style>
 </head>
 <body>
@@ -1151,14 +1258,82 @@
                         </div>
 
                         <div v-if="classList.length > 0" class="list" style="margin-top: 12px;">
-                            <div v-for="item in classList" class="list-item">
+                            <div v-for="item in classList" class="list-item" :key="item.classId">
                                 <div class="list-header">
-                                    <span>课时ID: {{item.classId}}</span>
-                                    <span :class="getStatusTagClass(item.status)">{{getStatusText(item.status)}}</span>
+                                <span>课时ID: {{item.classId}}</span>
+                                <span :class="getStatusTagClass(item.status)">{{getStatusText(item.status)}}</span>
                                 </div>
-                                <div class="list-desc">老师名称: {{item.teacherName}} | 开始时间: {{timestampToDateTime(item.startMillisecondTime)}} - 结束时间: {{timestampToDateTime(item.startMillisecondTime + item.duration * 60 * 1000)}}</div>
+                                
+                                <!-- list-desc + 预约按钮 同一行布局 -->
+                                <div class="desc-btn-container">
+                                <div class="list-desc">
+                                    老师名称: {{item.teacherName}} | 
+                                    开始时间: {{timestampToDateTime(item.startMillisecondTime)}} - 
+                                    结束时间: {{timestampToDateTime(item.startMillisecondTime + item.duration * 60 * 1000)}}
+                                </div>
+                                
+                                <!-- 仅status=1时显示预约按钮 -->
+                                <button 
+                                    v-if="item.status === 0"
+                                    class="reserve-btn"
+                                    @click="openReserveModal(item)"
+                                >
+                                    预约
+                                </button>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- 预约弹窗 -->
+                        <div v-if="showReserveModal" class="modal-mask">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                            <h3>预约课时</h3>
+                            <button class="close-btn" @click="closeReserveModal">×</button>
+                            </div>
+                            <div class="modal-body">
+                            <!-- 展示当前课时信息 -->
+                            <div class="form-item">
+                                <label>课时ID：</label>
+                                <span>{{currentClass.classId || '-'}}</span>
+                            </div>
+                            <div class="form-item">
+                                <label>老师名称：</label>
+                                <span>{{currentClass.teacherName || '-'}}</span>
+                            </div>
+                            <div class="form-item">
+                                <label>上课时间：</label>
+                                <span>{{timestampToDateTime(currentClass.startMillisecondTime)}}</span>
+                            </div>
+                            
+                            <!-- 学生信息输入 -->
+                            <div class="form-item">
+                                <label class="required">学生姓名：</label>
+                                <input 
+                                type="text" 
+                                v-model="createReserveDialogForm.studentName" 
+                                placeholder="请输入学生姓名"
+                                class="form-input"
+                                >
+                            </div>
+                            <div class="form-item">
+                                <label class="required">手机号码：</label>
+                                <input 
+                                type="tel" 
+                                v-model="createReserveDialogForm.phone" 
+                                placeholder="请输入手机号码"
+                                class="form-input"
+                                maxlength="11"
+                                >
+                            </div>
+                            </div>
+                            <div class="modal-footer">
+                            <button class="cancel-btn" @click="closeReserveModal">取消</button>
+                            <button class="confirm-btn" @click="submitReservation">确认预约</button>
+                            </div>
+                        </div>
+                        </div>
+
                         <div v-else class="empty-state">
                             <i class="ri-calendar-event-line"></i>暂无课时数据
                         </div>
@@ -1405,10 +1580,103 @@
                     createDialogClassForm: { // 课时表单数据
                         classDate: '',
                         startTime: ''
-                    }
+                    },
+
+                    //预约课时弹窗
+                    showReserveModal: false, // 预约弹窗显示状态
+                    currentClass: {}, // 当前选中的课时
+                    createReserveDialogForm: { // 预约表单数据
+                        studentName: '',
+                        phone: ''
+                    },
                 }
             },
             methods: {
+                //预约课时弹窗
+                // 补零工具（原有方法）
+                padZero(num) {
+                return num.toString().padStart(2, '0');
+                },
+
+                // 打开预约弹窗
+                openReserveModal(classItem) {
+                // 重置表单
+                this.createReserveDialogForm = {
+                    studentName: '',
+                    phone: ''
+                };
+                // 保存当前课时信息（深拷贝避免引用问题）
+                this.currentClass = { ...classItem };
+                // 打开弹窗
+                this.showReserveModal = true;
+                },
+
+                // 关闭预约弹窗
+                closeReserveModal() {
+                this.showReserveModal = false;
+                this.currentClass = {};
+                this.createReserveDialogForm = { studentName: '', phone: '' };
+                },
+
+                // 提交预约请求
+                async submitReservation() {
+                try {
+                    // 表单校验
+                    const { studentName, phone } = this.createReserveDialogForm;
+                    if (!studentName || studentName.trim() === '') {
+                    alert('学生姓名不能为空！');
+                    return;
+                    }
+                    // if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
+                    // alert('请输入正确的11位手机号码！');
+                    // return;
+                    // }
+                    if (!this.currentClass.classId) {
+                    alert('课时信息异常，请刷新重试！');
+                    return;
+                    }
+
+                    // 构造预约请求数据
+                    const requestData = {
+                        classId: this.currentClass.classId, // 课时ID
+                        templateId: this.currentClass.templateId, // 模板ID
+                        institutionId: this.currentClass.institutionId, // 机构ID
+                        teacherId: this.currentClass.teacherId, // 老师ID
+                        studentName: studentName, // 学生姓名
+                        phone: phone // 手机号码
+                    };
+
+                    // 打印请求数据（调试用）
+                    console.log('预约请求数据：', requestData);
+
+                    // 发送POST请求
+                    // const res = await axios.post(`${this.baseUrl}/reservations`, requestData, {
+                    // headers: {
+                    //     'Content-Type': 'application/json;charset=UTF-8'
+                    // }
+                    // });
+                    const res = await axios.post(`${this.baseUrl}/reservations`, requestData);
+                    console.log('res:', res);
+                    if (res.data.code == 200) {
+                        alert('预约成功！');
+                        this.closeReserveModal();
+                        this.getAvailableClasses();
+                    } else {
+                        alert(res.data.message);
+                    }
+                    // 预约成功处理
+                    
+                    // 刷新课时列表（可选）
+                    // this.getClassList();
+
+                } catch (e) {
+                    console.error('预约失败：', e);
+                    const errorMsg = e.response?.data?.message || '预约失败，请稍后重试';
+                    alert(errorMsg);
+                }
+                },
+                //预约课时弹窗
+
                 // 打开弹窗：重置表单 + 赋值当前模板
                 openCreateClassModal(template) {
                     // 1. 重置表单（关键：避免旧数据干扰）
@@ -1460,7 +1728,7 @@
                     teacherName: this.currentTemplate.teacherName,
                     startMillisecondTime: classTimestampMs, // 传递用户选择的日期
                     duration: this.currentTemplate.classDuration, // 传递用户选择的时间
-                    status: 1 // 默认可预约
+                    status: 0 // 默认可预约
                     };
                     console.log("请求数据：", requestData);
 
@@ -1532,25 +1800,24 @@
 
                 getStatusTagClass(status) {
                     switch (status) {
-                        case 1: return 'status-tag status-success';
-                        case 2: return 'status-tag status-warning';
-                        case 3: return 'status-tag status-danger';
+                        case 0: return 'status-tag status-success';
+                        case 1: return 'status-tag status-warning';
+                        case 1: return 'status-tag status-danger';
                         default: return 'status-tag status-default';
                     }
                 },
                 getStatusText(status) {
                     switch (status) {
-                        case 1: return '可预约';
-                        case 2: return '已抢占';
-                        case 3: return '已取消';
+                        case 0: return '可预约';
+                        case 1: return '已抢占';
                         default: return '未知';
                     }
                 },
                 getReservationTagClass(status) {
                     switch (status) {
-                        case 1: return 'status-tag status-success';
-                        case 2: return 'status-tag status-danger';
-                        case 3: return 'status-tag status-default';
+                        case 0: return 'status-tag status-success';
+                        case 1: return 'status-tag status-danger';
+                        case 1: return 'status-tag status-default';
                         default: return 'status-tag status-default';
                     }
                 },

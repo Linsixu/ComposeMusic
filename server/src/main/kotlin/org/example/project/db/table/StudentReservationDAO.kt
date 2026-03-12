@@ -35,9 +35,11 @@ class StudentReservationDAO {
 
     suspend fun create(reservation: StudentReservation): Long = dbQuery {
         StudentReservations.insert {
-            it[studentId] = reservation.studentId
             it[classId] = reservation.classId
+            it[studentId] = reservation.studentId
+            it[institutionId] = reservation.institutionId
             it[status] = reservation.status
+            it[bookedAtms] = reservation.bookedAtms
         } get StudentReservations.reservationId
     }
 

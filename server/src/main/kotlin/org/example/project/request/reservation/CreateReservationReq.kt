@@ -1,4 +1,4 @@
-package org.example.project.request.course
+package org.example.project.request.reservation
 
 import kotlinx.serialization.Serializable
 
@@ -8,13 +8,11 @@ import kotlinx.serialization.Serializable
  * 用途：
  */
 @Serializable
-class QueryCourseResponse(
+data class CreateReservationReq(
     val classId: Long,
     val templateId: Long,
-    val teacherName: String,
-    val teacherId: Long,
     val institutionId: Long,
-    val startMillisecondTime: Long,
-    val duration: Int,
-    val status: Int
+    val teacherId: Long,
+    val studentName: String,
+    val phone: String
 )

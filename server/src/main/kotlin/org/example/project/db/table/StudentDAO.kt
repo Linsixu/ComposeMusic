@@ -3,7 +3,10 @@ package org.example.project.db.table
 
 import org.example.project.db.DatabaseFactory.dbQuery
 import org.example.project.db.model.Student
+import org.example.project.db.table.Students.institutionId
+import org.example.project.db.table.Students.phone
 import org.example.project.db.table.Students.studentId
+import org.example.project.db.table.Students.studentName
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
@@ -47,6 +50,12 @@ class StudentDAO {
     suspend fun findById(id: Long): Student? = dbQuery {
         Students.selectAll().where { studentId eq id }
             .singleOrNull()?.let { resultRowToStudent(it) }
+    }
+
+    suspend fun findByUserInfo(name: String, parentPhone: String, institution: Long): Student? = dbQuery {
+        Students.selectAll().where {
+            ((institutionId eq institution) and (studentName eq name) and (phone eq parentPhone))
+        }.singleOrNull()?.let { resultRowToStudent(it) }
     }
 
     suspend fun findAll(): List<Student> = dbQuery {

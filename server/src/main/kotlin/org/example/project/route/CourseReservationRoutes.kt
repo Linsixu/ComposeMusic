@@ -22,6 +22,7 @@ import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
+import org.example.project.request.reservation.CreateReservationReq
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
@@ -213,9 +214,7 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
 //            } catch (e: Exception) {
 //                println("course-classe failure, e=$e")
 //            }
-            println("magic course-classe after1")
             val courseClassReq = call.receive<CreateCourseReq>()
-            println("magic course-classe after")
             val response = service.createCourseClass(courseClassReq)
             call.respond(response)
         }
@@ -266,7 +265,8 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
     route("/reservations") {
         // 6.1 创建预约记录（POST /reservations）
         post {
-            val reservation = call.receive<StudentReservation>()
+            val reservation = call.receive<CreateReservationReq>()
+            println("magic /reservation=${reservation}")
             val response = service.createReservation(reservation)
             call.respond(response)
         }
