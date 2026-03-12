@@ -13,6 +13,7 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 import kotlinx.serialization.json.Json
+import org.example.project.SqlCode.error_other
 import org.example.project.db.DatabaseFactory
 import org.example.project.db.manager.CourseReservationService
 import org.example.project.db.model.ApiResponse
@@ -62,10 +63,10 @@ fun Application.module() {
     }
     install(StatusPages) {
         exception<IllegalArgumentException> { call, e ->
-            call.respond(ApiResponse(success = false, data = null, message = e.message ?: "参数错误"))
+            call.respond(ApiResponse(success = false, data = null, code = error_other, message = e.message ?: "参数错误"))
         }
         exception<Exception> { call, e ->
-            call.respond(ApiResponse(success = false, data = null, message = "服务器内部错误：${e.message}"))
+            call.respond(ApiResponse(success = false, data = null, code = error_other, message = "服务器内部错误：${e.message}"))
         }
     }
     DatabaseFactory.init()

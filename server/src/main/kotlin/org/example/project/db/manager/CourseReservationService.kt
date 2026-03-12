@@ -498,7 +498,6 @@ class CourseReservationService(
     suspend fun deleteReservation(req: DeleteReservationReq): ApiResponse<Boolean> {
         return try {
             dbQuery {
-                println("magic deleteReservation classid=${req.classId}")
 //                val student = studentDAO.findByUserInfoV2(req.studentName, req.studentPhone) ?:  return@dbQuery ApiResponse(success = false, code = student_has_not_exit, message = "当前学生信息不正确，无法取消预约")
                 val result = courseClassDAO.updateStatus(req.classId, 0)
                 if (result) {
@@ -570,7 +569,7 @@ class CourseReservationService(
         } catch (e: IllegalArgumentException) {
             ApiResponse(success = false, code= teacher_has_not_exit, message = "查询失败：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "查询失败：${e.message}")
+            ApiResponse(success = false, code= error_other, message = "查询失败：${e.message}")
         }
     }
 
