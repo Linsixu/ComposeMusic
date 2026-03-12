@@ -21,6 +21,7 @@ import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.reservation.CreateReservationReq
+import org.example.project.request.reservation.DeleteReservationReq
 import org.example.project.request.reservation.QueryReservationByStudentInfoReq
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -270,12 +271,12 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
             call.respond(response)
         }
 
-        // 6.2 删除预约记录（取消预约）（DELETE /reservations/{id}）
-        delete("{id}") {
-            val id = call.parameters["id"]?.toLong() ?: throw IllegalArgumentException("预约ID不能为空")
-            val response = service.deleteReservation(id)
-            call.respond(response)
-        }
+//        // 6.2 删除预约记录（取消预约）（DELETE /reservations/{id}）
+//        delete("{id}") {
+//            val id = call.parameters["id"]?.toLong() ?: throw IllegalArgumentException("预约ID不能为空")
+//            val response = service.deleteReservation(id)
+//            call.respond(response)
+//        }
 
         // 6.3 更新预约状态（PUT /reservations/{id}/status/{status}）
         put("{id}/status/{status}") {
@@ -305,6 +306,11 @@ fun Route.courseReservationRoutes(service: CourseReservationService) {
         post("student") {
             val reservation = call.receive<QueryReservationByStudentInfoReq>()
             val response = service.getReservationsByStudentName(reservation)
+            call.respond(response)
+        }
+        post("delete") {
+            val reservation = call.receive<DeleteReservationReq>()
+            val response = service.deleteReservation(reservation)
             call.respond(response)
         }
     }

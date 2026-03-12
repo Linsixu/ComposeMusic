@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ReservationResponse(
     val reservationId: Long? = null,
+    val classId: Long,
     val teacherName: String,
     val studentName: String,
     val status: Int = 1,

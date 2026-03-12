@@ -37,6 +37,7 @@ import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
 import org.example.project.request.reservation.CreateReservationReq
+import org.example.project.request.reservation.DeleteReservationReq
 import org.example.project.request.reservation.QueryReservationByStudentInfoReq
 import org.example.project.request.reservation.ReservationResponse
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -494,12 +495,24 @@ class CourseReservationService(
         }
     }
 
-    suspend fun deleteReservation(id: Long): ApiResponse<Boolean> {
+    suspend fun deleteReservation(req: DeleteReservationReq): ApiResponse<Boolean> {
         return try {
-            val success = reservationDAO.delete(id)
-            ApiResponse(success = success, message = if (success) "取消预约成功" else "预约记录不存在")
+            dbQuery {
+                println("magic deleteReservation classid=${req.classId}")
+//                val student = studentDAO.findByUserInfoV2(req.studentName, req.studentPhone) ?:  return@dbQuery ApiResponse(success = false, code = student_has_not_exit, message = "当前学生信息不正确，无法取消预约")
+                val result = courseClassDAO.updateStatus(req.classId, 0)
+                if (result) {
+                    reservationDAO.delete(req.reservationId)
+                    return@dbQuery ApiResponse(success = true, message = "取消预约成功")
+                } else {
+                    false
+                    return@dbQuery ApiResponse(success = false, code = course_status_has_change, message = "当前课时状态不对，取消失败")
+                }
+            }
+        } catch (e: IllegalArgumentException) {
+            ApiResponse(success = false, code = student_has_not_exit, message = "取消失败：${e.message}")
         } catch (e: Exception) {
-            ApiResponse(success = false, message = "取消失败：${e.message}")
+            ApiResponse(success = false, code = error_other, message = "取消失败：${e.message}")
         }
     }
 
@@ -544,7 +557,7 @@ class CourseReservationService(
     suspend fun getReservationsByStudentName(studentReq: QueryReservationByStudentInfoReq): ApiResponse<List<ReservationResponse>> {
         return try {
             dbQuery {
-                val student = studentDAO.findByUserInfoV2(studentReq.studentName, studentReq.studentPhone) ?: throw IllegalArgumentException("当前老师不存在系统中")
+                val student = studentDAO.findByUserInfoV2(studentReq.studentName, studentReq.studentPhone) ?: throw IllegalArgumentException("当前学生不存在系统中")
                 val out = ArrayList<ReservationResponse>()
                 val list = reservationDAO.findByStudent(student.studentId!!)
                 list.forEach {
@@ -573,7 +586,8 @@ class CourseReservationService(
             status = 1,
             startMillisecondTime = course.startMillisecondTime,
             duration = course.duration,
-            reservationTime = this.bookedAtms
+            reservationTime = this.bookedAtms,
+            classId = this.classId
         )
     }
 

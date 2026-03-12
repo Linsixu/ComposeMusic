@@ -790,6 +790,23 @@
         background: #40a9ff;
         }
         /* 课时预约 */
+
+        /* 取消预约按钮样式 */
+        .cancel-reserve-btn {
+        width: 90px;
+        height: 32px;
+        background: #f5222d;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+        }
+        .cancel-reserve-btn:hover {
+        background: #ff4d4f;
+        }
+        /** 取消预约按钮**/
     </style>
 </head>
 <body>
@@ -814,9 +831,9 @@
             <div class="nav-item" :class="{active: activeCategory === 'reservation'}" @click="activeCategory = 'reservation'">
                 <i class="ri-calendar-check-line"></i> 预约管理
             </div>
-            <div class="nav-item" :class="{active: activeCategory === 'operation'}" @click="activeCategory = 'operation'">
+            <!-- <div class="nav-item" :class="{active: activeCategory === 'operation'}" @click="activeCategory = 'operation'">
                 <i class="ri-hand-coin-line"></i> 核心操作
-            </div>
+            </div> -->
         </nav>
     </aside>
 
@@ -1403,17 +1420,70 @@
                     </div>
 
                     <div v-if="reservationList.length > 0" class="list" style="margin-top: 12px;">
-                        <div v-for="item in reservationList" class="list-item">
-                            <div class="list-header">
-                                <span>ID: {{item.reservationId}}</span>
-                                <span :class="getReservationTagClass(item.status)">{{getReservationStatusText(item.status)}}</span>
-                            </div>
-                            <div class="list-desc">学生名称: {{item.studentName}} | 老师名称：{{item.teacherName}} | 开始时间: {{timestampToDateTime(item.startMillisecondTime)}} - 结束时间: {{timestampToDateTime(item.startMillisecondTime + item.duration * 60 * 1000)}} | 抢占时间: {{timestampToDateTime(item.reservationTime)}}</div>
+                    <div v-for="item in reservationList" class="list-item" :key="item.reservationId">
+                        <div class="list-header">
+                        <span>ID: {{item.reservationId}}</span>
+                        <span :class="getReservationTagClass(item.status)">{{getReservationStatusText(item.status)}}</span>
+                        </div>
+                        
+                        <!-- list-desc + 取消预约按钮 布局容器 -->
+                        <div class="desc-btn-container">
+                        <div class="list-desc">
+                            学生名称: {{item.studentName}} | 老师名称：{{item.teacherName}} | 
+                            开始时间: {{timestampToDateTime(item.startMillisecondTime)}} - 
+                            结束时间: {{timestampToDateTime(item.startMillisecondTime + item.duration * 60 * 1000)}} | 
+                            抢占时间: {{timestampToDateTime(item.reservationTime)}}
+                        </div>
+                        
+                        <!-- 取消预约按钮：在list-desc右侧、状态标签下方 -->
+                        <button 
+                            class="cancel-reserve-btn"
+                            @click="openCancelModal(item)"
+                        >
+                            取消预约
+                        </button>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- 取消预约弹窗 -->
+                    <div v-if="showCancelModal" class="modal-mask">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                        <h3>取消预约确认</h3>
+                        <button class="close-btn" @click="closeCancelModal">×</button>
+                        </div>
+                        <div class="modal-body">
+                        <div class="form-item">
+                            <label>学生姓名：</label>
+                            <span>{{currentReservation.studentName || '-'}}</span>
+                        </div>
+                        <div class="form-item">
+                            <label>老师姓名：</label>
+                            <span>{{currentReservation.teacherName || '-'}}</span>
+                        </div>
+                        <div class="form-item">
+                            <label>开始时间：</label>
+                            <span>{{timestampToDateTime(currentReservation.startMillisecondTime)}}</span>
+                        </div>
+                        <div class="form-item">
+                            <label>结束时间：</label>
+                            <span>{{timestampToDateTime(currentReservation.startMillisecondTime + currentReservation.duration * 60 * 1000)}}</span>
+                        </div>
+                        </div>
+                        <div class="modal-footer">
+                        <button class="cancel-btn" @click="closeCancelModal">取消</button>
+                        <button class="confirm-btn" @click="submitCancelReservation">确认取消</button>
+                        </div>
                         </div>
                     </div>
                     <div v-else class="empty-state">
                         <i class="ri-calendar-close-line"></i>暂无预约记录
                     </div>
+
+                    <!-- 取消预约弹窗 -->
+                
+
 
                     <!-- <div class="form-grid" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
                         <div class="form-group form-col-6">
@@ -1589,9 +1659,79 @@
                         studentName: '',
                         phone: ''
                     },
+
+                    //取消预约
+                    showCancelModal: false, // 取消弹窗显示状态
+                    currentReservation: {}, // 当前选中的预约信息
                 }
             },
             methods: {
+                //取消预约
+                // 打开取消预约弹窗
+                openCancelModal(reservationItem) {
+                // 深拷贝当前预约信息，避免引用问题
+                this.currentReservation = { ...reservationItem };
+                // 打开弹窗
+                this.showCancelModal = true;
+                },
+
+                // 关闭取消预约弹窗
+                closeCancelModal() {
+                this.showCancelModal = false;
+                this.currentReservation = {};
+                },
+
+                // 提交取消预约请求
+                async submitCancelReservation() {
+                    try {// 1. 表单校验
+                        if (!this.currentReservation.reservationId) {
+                        alert('预约信息异常，请刷新重试！');
+                        return;
+                        }
+
+                        // 2. 构造取消请求数据
+                        const requestData = {
+                            reservationId: this.currentReservation.reservationId, // 预约ID
+                            classId: this.currentReservation.classId,    // 课时id
+                            studentName: this.currentReservation.studentName,    // 学生姓名
+                            teacherName: this.currentReservation.teacherName,    // 老师姓名
+                        };
+
+                        // 打印请求数据（调试用）
+                        console.log('取消预约请求数据：', requestData);
+
+                        // 3. 调用取消预约接口
+                        const res = await axios.post(
+                        `${this.baseUrl}/reservations/delete`,
+                        requestData,
+                        {
+                            headers: {
+                            'Content-Type': 'application/json;charset=UTF-8'
+                            }
+                        }
+                        );
+                        if (res.data.code == 200) {
+                        // 4. 取消成功处理
+                            alert('预约取消成功！');
+                            this.closeCancelModal();
+                        } else {
+                            alert(res.data.message || '取消预约失败');
+                        }
+                        if (!this.reservationTeacherName) {
+                            this.getReservationsByStudent();
+                        } else {
+                            this.getReservationByTeacherName();
+                        }
+                        // 刷新预约列表（可选）
+                        // this.getReservationList();
+
+                    } catch (e) {
+                        console.error('取消预约失败：', e);
+                        const errorMsg = e.response?.data?.message || '取消预约失败，请稍后重试';
+                        alert(errorMsg);
+                    }
+                },
+
                 //预约课时弹窗
                 // 补零工具（原有方法）
                 padZero(num) {
