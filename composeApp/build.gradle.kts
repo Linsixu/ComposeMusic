@@ -43,6 +43,12 @@ kotlin {
             //room
             implementation(libs.androidx.room.sqlite.wrapper)
             implementation(libs.androidx.room.compiler)
+
+            //network
+            implementation("io.ktor:ktor-client-okhttp:2.3.12")
+        }
+        iosMain.dependencies {
+            implementation("io.ktor:ktor-client-darwin:2.3.12")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -63,6 +69,17 @@ kotlin {
             //room
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
+
+            //网络请求
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content)
+            implementation(libs.ktor.client.json)
+            implementation(libs.logger)
+
+            implementation(libs.viewmodel.ktx)
+            implementation(libs.viewmodel.compose)
+
+            implementation(libs.coroutines)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
