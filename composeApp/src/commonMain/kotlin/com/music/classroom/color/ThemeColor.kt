@@ -1,6 +1,8 @@
 package com.music.classroom.color
 
 import androidx.compose.ui.graphics.Color
+import musicclassroom.composeapp.generated.resources.Res
+import musicclassroom.composeapp.generated.resources.my_app_logo
 
 /**
  * @author: linsixu@ruqimobility.com
