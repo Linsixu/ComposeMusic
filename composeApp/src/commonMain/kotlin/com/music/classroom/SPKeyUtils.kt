@@ -15,6 +15,11 @@ object SPKeyUtils {
 
     const val DEFAULT_TEACHER_NAME = "default_teacher_name"
 
+    const val TEACHER_ID_VALUE = "teacher_id"
+    const val TEACHER_NAME = "teacher_name"
+    const val TEACHER_PHONE = "teacher_phone"
+    //教师相关
+
     //默认课时
     var currentLessonTime = mutableStateOf(0L)
 

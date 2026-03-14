@@ -37,6 +37,7 @@ import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
 import org.example.project.request.login.LoginRequest
+import org.example.project.request.login.LoginTeacherRes
 import org.example.project.request.reservation.CreateReservationReq
 import org.example.project.request.reservation.DeleteReservationReq
 import org.example.project.request.reservation.QueryReservationByStudentInfoReq
@@ -53,7 +54,7 @@ class CourseReservationService(
     private val reservationDAO: StudentReservationDAO = StudentReservationDAO()
 ) {
 
-    suspend fun loginByTeacher(req: LoginRequest): ApiResponse<Int> {
+    suspend fun loginByTeacher(req: LoginRequest): ApiResponse<LoginTeacherRes?> {
         return try {
             dbQuery {
                 println("teacher login first")
@@ -63,17 +64,18 @@ class CourseReservationService(
                     return@dbQuery ApiResponse(
                         success = false,
                         code = teacher_has_not_exit,
-                        data = 0,
+                        data = null,
                         message = "教师账号不存在"
                     )
                 }
+                val data = LoginTeacherRes(teacherId = teacher.teacherId!!, teacherName = teacher.teacherName, teacherPhone = teacher.teacherPhone!!)
                 println("teacher login success")
-                return@dbQuery ApiResponse(success = true, data = 1, message = "登录成功")
+                return@dbQuery ApiResponse(success = true, data = data, message = "登录成功")
             }
         }  catch (e: Exception) {
             ApiResponse(
                 success = false,
-                data = 0,
+                data = null,
                 code = error_other,
                 message = "登陆失败：${e.message}"
             )

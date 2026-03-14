@@ -3,6 +3,7 @@ package com.music.classroom.network.api
 import com.music.classroom.network.BaseApi
 import com.music.classroom.network.KtorClient
 import com.music.classroom.network.res.ApiResponse
+import com.music.classroom.network.res.login.LoginTeacherRes
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -22,22 +23,22 @@ class ILoginApi {
 
     suspend fun requestTeacherLogin(
         account: String, password: String
-    ): Boolean {
+    ): LoginTeacherRes? {
         val body = mapOf(
             "account" to account,
             "password" to password
         )
         try {
-            val response: ApiResponse<Int> = client.post("$baseUrl/login/teacher") {
+            val response: ApiResponse<LoginTeacherRes?> = client.post("$baseUrl/login/teacher") {
                 contentType(ContentType.Application.Json)
                 setBody(body = body)
             }.body()
             println("✅ 接口返回：$response")
-            return response.success && response.data == 1
+            return response.data
         }catch (e: Exception) {
             println("✅ 接口e=$e")
         }
-        return false
+        return null
     }
 
     suspend fun requestStudentLogin(
