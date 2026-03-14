@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +55,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.music.classroom.SPKeyUtils.DEFAULT_LESSON_DEFAULT_TIME
+import com.music.classroom.SPKeyUtils.TEACHER_ID_VALUE
+import com.music.classroom.SPKeyUtils.TEACHER_NAME
+import com.music.classroom.SPKeyUtils.TEACHER_PHONE
 import com.music.classroom.allpage.AllCourse
 import com.music.classroom.appConfig.appLogo
 import com.music.classroom.appConfig.appName
@@ -71,6 +76,7 @@ import com.music.classroom.setting.NotificationScreen
 import com.music.classroom.status.FailureLoginStatus
 import com.music.classroom.status.SuccessLoginStatus
 import com.music.classroom.status.UnknowLoginStatus
+import com.music.classroom.storage.spStorage
 import com.music.classroom.util.showToast
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.compose_course_icon
@@ -181,6 +187,16 @@ fun LoginScreen(
             showToast("登陆失败，请检查登陆信息")
         }
     }
+
+    LaunchedEffect(Unit) {
+        val teacherId = spStorage.getString(TEACHER_ID_VALUE)
+        val teacherName = spStorage.getString(TEACHER_NAME)
+        val teacherPhone = spStorage.getString(TEACHER_PHONE)
+        if (!teacherId.isNullOrBlank() && !teacherName.isNullOrBlank() && !teacherPhone.isNullOrBlank()) {
+            onLoginSuccess()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
