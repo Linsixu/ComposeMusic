@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
+    //这个是根据Serializable动态编译生成对应的json对象，必须要
+    kotlin("plugin.serialization") version "2.3.0"
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)

@@ -36,6 +36,7 @@ import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
 import org.example.project.request.course.QueryCourseResponse
 import org.example.project.request.course.QueryCourseTemplateResponse
+import org.example.project.request.login.LoginRequest
 import org.example.project.request.reservation.CreateReservationReq
 import org.example.project.request.reservation.DeleteReservationReq
 import org.example.project.request.reservation.QueryReservationByStudentInfoReq
@@ -51,6 +52,55 @@ class CourseReservationService(
     private val courseClassDAO: CourseClassDAO = CourseClassDAO(),
     private val reservationDAO: StudentReservationDAO = StudentReservationDAO()
 ) {
+
+    suspend fun loginByTeacher(req: LoginRequest): ApiResponse<Int> {
+        return try {
+            dbQuery {
+                println("teacher login first")
+                val teacher = teacherDAO.findByName(req.account)
+                println("teacher=$teacher")
+                if (teacher == null) {
+                    return@dbQuery ApiResponse(
+                        success = false,
+                        code = teacher_has_not_exit,
+                        data = 0,
+                        message = "教师账号不存在"
+                    )
+                }
+                println("teacher login success")
+                return@dbQuery ApiResponse(success = true, data = 1, message = "登录成功")
+            }
+        }  catch (e: Exception) {
+            ApiResponse(
+                success = false,
+                data = 0,
+                code = error_other,
+                message = "登陆失败：${e.message}"
+            )
+        }
+    }
+
+    suspend fun loginByStudent(req: LoginRequest): ApiResponse<Int> {
+        return try {
+            dbQuery {
+                val teacher = studentDAO.findByUserInfoV2(req.account, req.password) ?: return@dbQuery ApiResponse(
+                    success = false,
+                    code = student_has_not_exit,
+                    data = 0,
+                    message = "学生账号不存在"
+                )
+                ApiResponse(success = true, data = 1, message = "登录成功")
+            }
+        }  catch (e: Exception) {
+            ApiResponse(
+                success = false,
+                data = 0,
+                code = error_other,
+                message = "登陆失败：${e.message}"
+            )
+        }
+    }
+
     // ========== 机构服务 ==========
     suspend fun createInstitution(institution: EduInstitution): ApiResponse<Long> {
         return try {

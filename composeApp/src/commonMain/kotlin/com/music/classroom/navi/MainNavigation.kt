@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -54,8 +57,10 @@ import androidx.navigation.compose.rememberNavController
 import com.music.classroom.allpage.AllCourse
 import com.music.classroom.appConfig.appLogo
 import com.music.classroom.appConfig.appName
+import com.music.classroom.appConfig.isStudentApp
 import com.music.classroom.color.bgPrimaryColor
 import com.music.classroom.color.primaryColor
+import com.music.classroom.network.viewmodel.LoginViewModel
 import com.music.classroom.page.HomeScreen
 import com.music.classroom.setting.DataTransferScreen
 import com.music.classroom.setting.DefaultTeacherNameScreen
@@ -63,6 +68,10 @@ import com.music.classroom.setting.ExcelGenerateScreen
 import com.music.classroom.setting.LessonDefaultScreen
 import com.music.classroom.setting.MusicToolsScreen
 import com.music.classroom.setting.NotificationScreen
+import com.music.classroom.status.FailureLoginStatus
+import com.music.classroom.status.SuccessLoginStatus
+import com.music.classroom.status.UnknowLoginStatus
+import com.music.classroom.util.showToast
 import musicclassroom.composeapp.generated.resources.Res
 import musicclassroom.composeapp.generated.resources.compose_course_icon
 import musicclassroom.composeapp.generated.resources.compose_home_icon
@@ -140,23 +149,45 @@ fun MainAppContent(
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
-    navController: NavController
+    navController: NavController,
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
+//    var isLoading by remember { mutableStateOf(false) }
+
+    val isLoading by loginViewModel.loadingState.collectAsStateWithLifecycle()
+
+    val requestResult by loginViewModel.loginState.collectAsStateWithLifecycle()
+
+//    val requestResultV2 by remember(requestResult) {
+//        derivedStateOf { requestResult }
+//    }
     var showError by remember { mutableStateOf(false) }
 
     // 定义浅色系主题色
     val mainBrandColor = primaryColor // 更有活力的蓝色
     val backgroundColor = bgPrimaryColor // 你要求的背景色
 
+    when(requestResult) {
+        is UnknowLoginStatus -> {
+
+        }
+        is SuccessLoginStatus -> {
+            onLoginSuccess()
+            showToast("登陆成功")
+        }
+        is FailureLoginStatus -> {
+            showToast("登陆失败，请检查登陆信息")
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
         contentAlignment = Alignment.Center
     ) {
+
         // 背景装饰：浅色背景下用淡淡的彩色光晕增加灵动感
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(
@@ -240,8 +271,11 @@ fun LoginScreen(
             Button(
                 onClick = {
                     if (username.isNotBlank() && password.isNotBlank()) {
-                        isLoading = true
-                        onLoginSuccess()
+                        if (isStudentApp) {
+                            loginViewModel.loginByStudent(username, password)
+                        } else {
+                            loginViewModel.loginByTeacher(username, password)
+                        }
                     } else {
                         showError = true
                     }

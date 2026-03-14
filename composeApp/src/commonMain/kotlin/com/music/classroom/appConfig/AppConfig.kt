@@ -11,3 +11,6 @@ import musicclassroom.composeapp.generated.resources.my_app_logo
 val appLogo = Res.drawable.my_app_logo
 
 val appName = "陈家工作室"
+
+
+val isStudentApp = false

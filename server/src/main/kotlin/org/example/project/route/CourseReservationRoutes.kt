@@ -20,6 +20,7 @@ import org.example.project.request.CreateCourseTemplateReq
 import org.example.project.request.CreateStudentReq
 import org.example.project.request.TeacherRequest
 import org.example.project.request.course.CreateCourseReq
+import org.example.project.request.login.LoginRequest
 import org.example.project.request.reservation.CreateReservationReq
 import org.example.project.request.reservation.DeleteReservationReq
 import org.example.project.request.reservation.QueryReservationByStudentInfoReq
@@ -28,6 +29,21 @@ import java.nio.charset.StandardCharsets
 
 // 封装所有路由，依赖注入服务层
 fun Route.courseReservationRoutes(service: CourseReservationService) {
+    //====================== 0. 登陆相关接口 ======================
+    route("/login") {
+        post("teacher") {
+            val login = call.receive<LoginRequest>()
+            val response = service.loginByTeacher(login)
+            call.respond(response)
+        }
+
+        post("student") {
+            val login = call.receive<LoginRequest>()
+            val response = service.loginByStudent(login)
+            call.respond(response)
+        }
+    }
+
     // ====================== 1. 机构相关接口 ======================
     route("/institutions") {
         // 1.1 创建机构（POST /institutions）
